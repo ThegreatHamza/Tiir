@@ -53,6 +53,12 @@ Emails sent locally (confirmation, invitations, password reset) appear in Inbuck
 5. Copy `.env.example` to `.env`, then fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (**Project settings → API**).
 6. Optional demo data: also set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env`, then run `npm run seed`.
 
+### Deploy the frontend on Vercel
+
+1. In Vercel, **Add New → Project** and import the GitHub repository. The settings come from `vercel.json` (Vite, `npm run build`, `dist`, and a rewrite so links such as `/projects/…` open directly).
+2. Under **Environment Variables**, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (hosted project values), then deploy.
+3. Back in Supabase **Authentication → URL configuration**, set the Site URL to the Vercel address and add `<vercel-url>/reset-password` and `<vercel-url>/accept-invite` to the redirect URLs.
+
 > **The service role key bypasses Row Level Security.** It is read only by `scripts/seed.mjs` on your machine and by the Edge Function on Supabase. Never give it a `VITE_` prefix, and never commit it.
 
 ### Demo accounts (after `npm run seed`)
