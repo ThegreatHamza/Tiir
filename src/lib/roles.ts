@@ -36,6 +36,8 @@ export const can = {
   seeCosts: (r: AppRole | null | undefined) => has(r, ["owner", "admin", "project_manager", "estimator", "accountant"]),
   /** Payroll and company-wide finance. */
   seeFinance: (r: AppRole | null | undefined) => has(r, ["owner", "admin", "accountant"]),
+  /** Price library, BoQ, unit price analyses (with project access for BoQs). */
+  editEstimate: (r: AppRole | null | undefined) => has(r, ["owner", "admin", "project_manager", "estimator"]),
   seeAudit: (r: AppRole | null | undefined) => has(r, ["owner", "admin"]),
   uploadFiles: (r: AppRole | null | undefined) => r != null && r !== "client_viewer",
 };

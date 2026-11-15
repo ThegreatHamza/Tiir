@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { ArrowLeft, Calculator, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,7 +97,14 @@ export function ProjectDetailPage() {
               {deleted ? <Badge variant="destructive">{t("common.deletedLabel")}</Badge> : null}
             </h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            {can.seeCosts(role) ? (
+              <Button asChild>
+                <Link to={`/projects/${projectId}/estimate`}>
+                  <Calculator /> {t("estimating.open")}
+                </Link>
+              </Button>
+            ) : null}
             {editable ? (
               <Button variant="outline" onClick={() => setEditing(true)}>
                 <Pencil /> {t("common.edit")}

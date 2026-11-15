@@ -31,3 +31,13 @@ describe("moneyNumFmt", () => {
     expect(moneyNumFmt(2)).toBe("#,##0.00");
   });
 });
+
+import { safeSheetName } from "./excel";
+
+describe("safeSheetName", () => {
+  it("removes forbidden characters, truncates and de-duplicates", () => {
+    expect(safeSheetName("BA25 / béton [m3]")).toBe("BA25   béton  m3");
+    expect(safeSheetName("x".repeat(40))).toHaveLength(31);
+    expect(safeSheetName("DQE", ["DQE"])).toBe("DQE 2");
+  });
+});

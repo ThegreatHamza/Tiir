@@ -71,9 +71,12 @@
     "m3": "m³",
     "kg": "kg",
     "t": "t",
-    "u": "unit",
-    "ml": "linear metre",
-    "ff": "lump sum"
+    "u": "nr",
+    "ml": "lm",
+    "ff": "sum",
+    "h": "hr",
+    "day": "day",
+    "l": "L"
   },
   "glossary": {
     "boq": "Bill of quantities (BoQ)",
@@ -115,7 +118,9 @@
     "clients": "Clients",
     "members": "Members",
     "companySettings": "Company settings",
-    "account": "My account"
+    "account": "My account",
+    "sectionEstimating": "Estimating",
+    "priceLibrary": "Price library"
   },
   "auth": {
     "tagline": "Estimate, plan, build and bill — one dataset.",
@@ -351,5 +356,244 @@
     "goHome": "Go to home",
     "configMissing": "Tiir is not configured",
     "configMissingHint": "Set the Supabase URL and anon key in a .env file, then restart."
+  },
+  "pdf": {
+    "no": "No.",
+    "page": "Page {{page}} / {{pages}}",
+    "subtotal": "Subtotal {{code}} — {{title}}",
+    "totalHt": "Total excl. VAT",
+    "vat": "VAT {{rate}} %",
+    "totalTtc": "Total incl. VAT",
+    "perUnit": "Per {{unit}}",
+    "tenderNote": "Prices and amounts to be filled in by the bidder. Quantities are given for information and will be measured on site."
+  },
+  "estimating": {
+    "title": "Estimate",
+    "open": "Estimate",
+    "designation": "Description",
+    "unit": "Unit",
+    "unitShort": "Unit",
+    "quantity": "Quantity",
+    "unitCost": "Unit cost",
+    "dryUnitCost": "Dry unit cost",
+    "unitPrice": "Unit price",
+    "unitPriceShort": "Unit price ({{currency}})",
+    "amount": "Amount ({{currency}})",
+    "total": "Total",
+    "kinds": {
+      "material": "Material",
+      "labour": "Labour",
+      "equipment": "Equipment",
+      "subcontract": "Subcontract"
+    },
+    "tabs": {
+      "boq": "Bill of quantities",
+      "analyses": "Unit price analyses",
+      "compare": "Compare versions"
+    },
+    "summary": {
+      "dryCost": "Dry cost",
+      "margin": "Margin"
+    },
+    "resources": {
+      "title": "Price library",
+      "subtitle": "Materials, labour, equipment and subcontract rates used to build unit prices.",
+      "new": "New resource",
+      "edit": "Edit resource",
+      "formHint": "The price is copied into analyses when you use it; refresh an analysis to take a new price.",
+      "kind": "Type",
+      "supplier": "Supplier",
+      "updated": "Updated",
+      "allKinds": "All types",
+      "allCurrencies": "All currencies",
+      "emptyTitle": "The price library is empty",
+      "emptyHint": "Add resources one by one or import them from Excel.",
+      "deleteTitle": "Delete this resource?",
+      "deleteBody": "“{{name}}” will no longer be offered. Analyses that already use it keep their price."
+    },
+    "import": {
+      "title": "Import from Excel",
+      "short": "Import",
+      "hint": "First sheet of an .xlsx, .xls or .csv file. Columns: code, description, type, unit, unit cost, currency (optional), supplier (optional). Existing codes are updated.",
+      "chooseFile": "Choose a file",
+      "template": "Download a template",
+      "templateName": "Price library template",
+      "sampleCement": "Cement CEM II 42.5",
+      "sampleMason": "Mason",
+      "tooLarge": "The file is larger than 10 MB.",
+      "unreadable": "This file could not be read.",
+      "summary": "{{valid}} valid rows, {{errors}} rows with errors (skipped).",
+      "noHeader": "No header row found: the sheet needs at least code, description and unit cost columns.",
+      "error": "Row {{row}}: {{field}} {{reason}}",
+      "confirm": "Import {{count}} rows",
+      "done": "{{inserted}} added, {{updated}} updated.",
+      "fields": {
+        "code": "code",
+        "name": "description",
+        "kind": "type",
+        "unit": "unit",
+        "unit_cost": "unit cost",
+        "currency": "currency",
+        "supplier_name": "supplier"
+      },
+      "reasons": {
+        "missing": "is missing",
+        "invalid": "is not valid",
+        "duplicate": "appears twice"
+      }
+    },
+    "versions": {
+      "choose": "BoQ version",
+      "new": "New version",
+      "newHint": "Start empty or copy an existing version (sections, items, takeoff and analyses).",
+      "nameHint": "Leave empty to name it automatically.",
+      "startFrom": "Start from",
+      "empty": "An empty bill of quantities",
+      "copyOf": "A copy of {{label}}",
+      "created": "Version created",
+      "createFirst": "Create the first version",
+      "noneTitle": "No bill of quantities yet",
+      "noneHint": "Create a first version to start the takeoff and pricing.",
+      "noneReadOnly": "No estimate has been prepared for this project yet.",
+      "settings": "Version V{{number}}",
+      "settingsShort": "Version settings",
+      "settingsHint": "Name, coefficient and status of this version.",
+      "coefLocked": "Locked: the version is no longer a draft.",
+      "statusHint": "Submitted and approved versions are read-only.",
+      "current": "Current",
+      "makeCurrent": "Make this the current version",
+      "nowCurrent": "This version is now the current one",
+      "isCurrentHint": "This is the current version: it drives the budget, progress and billing.",
+      "lockedBanner": "This version is not a draft, so it is read-only. Create a new version to make changes.",
+      "statuses": {
+        "draft": "Draft",
+        "submitted": "Submitted",
+        "approved": "Approved"
+      }
+    },
+    "boq": {
+      "searchItems": "Search items…",
+      "expandAll": "Expand all",
+      "collapseAll": "Collapse all",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "dragDisabledSearch": "Clear the search to reorder.",
+      "emptyTitle": "No sections yet",
+      "emptyHint": "Add a first section (for example “Earthworks”), then its items.",
+      "newSection": "Add section",
+      "newSectionPlaceholder": "New section title…",
+      "sectionTitle": "Section title",
+      "itemCount": "{{count}} items",
+      "deleteSection": "Delete section",
+      "deleteSectionTitle": "Delete this section?",
+      "deleteSectionBody": "“{{title}}” and all its items will be removed from this version.",
+      "dragSection": "Drag to reorder the section",
+      "dragItem": "Drag to reorder the item",
+      "fromTakeoff": "Quantity from takeoff",
+      "openTakeoff": "Open takeoff",
+      "fromAnalysis": "Price from a unit price analysis",
+      "priceOverridden": "Selling price entered manually",
+      "itemDetails": "Details, takeoff and pricing",
+      "itemDeleted": "Item deleted",
+      "newItemPlaceholder": "New item description…",
+      "addItem": "Add",
+      "renumber": "Renumber",
+      "renumbered": "Sections and items renumbered"
+    },
+    "item": {
+      "section": "Section",
+      "summary": "{{quantity}} {{unit}} × {{price}} = {{total}}",
+      "quantitySource": "Quantity source",
+      "sources": {
+        "manual": "Entered directly",
+        "takeoff": "Sum of takeoff lines"
+      },
+      "pricing": "Pricing",
+      "pricingModes": {
+        "manual": "Dry unit cost entered",
+        "analysis": "From a unit price analysis"
+      },
+      "analysis": "Unit price analysis",
+      "chooseAnalysis": "Choose an analysis…",
+      "analysisHint": "Dry cost {{dry}} → selling price {{price}}",
+      "priceOverride": "Selling price (optional)",
+      "priceOverrideHint": "Leave empty to use dry cost × coefficient."
+    },
+    "takeoff": {
+      "label": "Description",
+      "count": "No.",
+      "length": "Length",
+      "width": "Width",
+      "height": "Height",
+      "result": "Result",
+      "total": "Item quantity",
+      "empty": "No measurement lines yet.",
+      "addLine": "Add line",
+      "toggleDeduction": "Switch between addition and deduction",
+      "hint": "Empty dimensions count as 1. A negative number is a deduction."
+    },
+    "upa": {
+      "title": "Analyses",
+      "new": "New",
+      "create": "Create analysis",
+      "empty": "No unit price analysis in this version.",
+      "emptyTitle": "Select or create an analysis",
+      "emptyHint": "An analysis builds the dry cost of one unit of work from resources, then applies the coefficient.",
+      "perUnit": "Per unit of",
+      "coefficient": "Coefficient",
+      "coefficientHint": "Empty = version coefficient ({{value}}).",
+      "currencyNote": "Resources must be priced in {{currency}}, the project currency.",
+      "consumption": "Quantity per unit",
+      "waste": "Waste",
+      "amount": "Amount",
+      "noComponents": "No resources yet: search the price library below or add a free line.",
+      "searchLibrary": "Search the price library ({{currency}})…",
+      "noResources": "No resource in {{currency}} matches.",
+      "freeLine": "Free line description…",
+      "addLine": "Add line",
+      "dryCost": "Dry cost",
+      "sellingPrice": "Selling price per {{unit}}",
+      "usedBy": "Used by {{count}} item(s)",
+      "refreshPrices": "Refresh prices from library",
+      "refreshed": "{{count}} price(s) updated",
+      "deleteTitle": "Delete this analysis?",
+      "deleteBody": "{{code}} is used by {{count}} item(s). They keep its dry cost as a manual unit cost."
+    },
+    "compare": {
+      "title": "Comparison",
+      "before": "Version A (before)",
+      "after": "Version B (after)",
+      "show": "Show",
+      "onlyChanges": "Only differences",
+      "everything": "All items",
+      "status": "Change",
+      "delta": "Difference",
+      "needTwo": "Create a second version to compare.",
+      "noDifferences": "No differences.",
+      "statuses": {
+        "added": "Added",
+        "removed": "Removed",
+        "changed": "Changed",
+        "unchanged": "Unchanged"
+      }
+    },
+    "exports": {
+      "button": "Export",
+      "kinds": {
+        "boq-priced": "Priced bill of quantities",
+        "boq-unpriced": "Unpriced bill of quantities (tender)",
+        "upa": "Unit price analyses"
+      },
+      "formats": {
+        "xlsx": "Excel",
+        "pdf": "PDF"
+      },
+      "pricedTitle": "Priced bill of quantities",
+      "unpricedTitle": "Bill of quantities for tender",
+      "upaTitle": "Unit price analyses",
+      "version": "Version",
+      "date": "Date",
+      "arabicNote": "PDF documents are produced in French."
+    }
   }
 }

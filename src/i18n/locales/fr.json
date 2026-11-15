@@ -72,8 +72,11 @@
     "kg": "kg",
     "t": "t",
     "u": "u",
-    "ml": "ml (mètre linéaire)",
-    "ff": "ff (forfait)"
+    "ml": "ml",
+    "ff": "ff",
+    "h": "h",
+    "day": "j",
+    "l": "l"
   },
   "glossary": {
     "boq": "DQE (devis quantitatif estimatif)",
@@ -115,7 +118,9 @@
     "clients": "Clients",
     "members": "Membres",
     "companySettings": "Paramètres de l’entreprise",
-    "account": "Mon compte"
+    "account": "Mon compte",
+    "sectionEstimating": "Chiffrage",
+    "priceLibrary": "Bibliothèque de prix"
   },
   "auth": {
     "tagline": "Chiffrer, planifier, construire et facturer — une seule base de données.",
@@ -351,5 +356,244 @@
     "goHome": "Retour à l’accueil",
     "configMissing": "Tiir n’est pas configuré",
     "configMissingHint": "Renseignez l’URL Supabase et la clé anon dans un fichier .env, puis redémarrez."
+  },
+  "pdf": {
+    "no": "N°",
+    "page": "Page {{page}} / {{pages}}",
+    "subtotal": "Sous-total {{code}} — {{title}}",
+    "totalHt": "Total HT",
+    "vat": "TVA {{rate}} %",
+    "totalTtc": "Total TTC",
+    "perUnit": "Pour 1 {{unit}}",
+    "tenderNote": "Prix unitaires et montants à compléter par le soumissionnaire. Les quantités sont données à titre indicatif et seront métrées contradictoirement."
+  },
+  "estimating": {
+    "title": "Chiffrage",
+    "open": "Chiffrage",
+    "designation": "Désignation",
+    "unit": "Unité",
+    "unitShort": "U",
+    "quantity": "Quantité",
+    "unitCost": "Prix unitaire",
+    "dryUnitCost": "Déboursé sec unitaire",
+    "unitPrice": "Prix de vente unitaire",
+    "unitPriceShort": "PU ({{currency}})",
+    "amount": "Montant ({{currency}})",
+    "total": "Montant",
+    "kinds": {
+      "material": "Matériaux",
+      "labour": "Main-d’œuvre",
+      "equipment": "Matériel",
+      "subcontract": "Sous-traitance"
+    },
+    "tabs": {
+      "boq": "DQE",
+      "analyses": "Sous-détails de prix",
+      "compare": "Comparer les versions"
+    },
+    "summary": {
+      "dryCost": "Déboursé sec",
+      "margin": "Marge"
+    },
+    "resources": {
+      "title": "Bibliothèque de prix",
+      "subtitle": "Matériaux, main-d’œuvre, matériel et sous-traitance utilisés dans les sous-détails de prix.",
+      "new": "Nouvelle ressource",
+      "edit": "Modifier la ressource",
+      "formHint": "Le prix est recopié dans les sous-détails qui l’utilisent ; actualisez un sous-détail pour reprendre un nouveau prix.",
+      "kind": "Nature",
+      "supplier": "Fournisseur",
+      "updated": "Mis à jour",
+      "allKinds": "Toutes les natures",
+      "allCurrencies": "Toutes les devises",
+      "emptyTitle": "La bibliothèque de prix est vide",
+      "emptyHint": "Ajoutez des ressources une à une ou importez-les depuis Excel.",
+      "deleteTitle": "Supprimer cette ressource ?",
+      "deleteBody": "« {{name}} » ne sera plus proposée. Les sous-détails qui l’utilisent conservent leur prix."
+    },
+    "import": {
+      "title": "Importer depuis Excel",
+      "short": "Importer",
+      "hint": "Première feuille d’un fichier .xlsx, .xls ou .csv. Colonnes : code, désignation, nature, unité, prix unitaire, devise (facultatif), fournisseur (facultatif). Les codes existants sont mis à jour.",
+      "chooseFile": "Choisir un fichier",
+      "template": "Télécharger un modèle",
+      "templateName": "Modèle bibliothèque de prix",
+      "sampleCement": "Ciment CPJ 42.5",
+      "sampleMason": "Maçon",
+      "tooLarge": "Le fichier dépasse 10 Mo.",
+      "unreadable": "Ce fichier n’a pas pu être lu.",
+      "summary": "{{valid}} lignes valides, {{errors}} lignes en erreur (ignorées).",
+      "noHeader": "Ligne d’en-tête introuvable : il faut au moins les colonnes code, désignation et prix unitaire.",
+      "error": "Ligne {{row}} : {{field}} {{reason}}",
+      "confirm": "Importer {{count}} lignes",
+      "done": "{{inserted}} ajoutées, {{updated}} mises à jour.",
+      "fields": {
+        "code": "code",
+        "name": "désignation",
+        "kind": "nature",
+        "unit": "unité",
+        "unit_cost": "prix unitaire",
+        "currency": "devise",
+        "supplier_name": "fournisseur"
+      },
+      "reasons": {
+        "missing": "manquant(e)",
+        "invalid": "invalide",
+        "duplicate": "en double"
+      }
+    },
+    "versions": {
+      "choose": "Version du DQE",
+      "new": "Nouvelle version",
+      "newHint": "Partez d’un DQE vide ou copiez une version existante (sections, articles, métré et sous-détails).",
+      "nameHint": "Laissez vide pour un nom automatique.",
+      "startFrom": "Partir de",
+      "empty": "Un DQE vide",
+      "copyOf": "Une copie de {{label}}",
+      "created": "Version créée",
+      "createFirst": "Créer la première version",
+      "noneTitle": "Aucun DQE pour l’instant",
+      "noneHint": "Créez une première version pour commencer le métré et le chiffrage.",
+      "noneReadOnly": "Aucun chiffrage n’a encore été préparé pour ce projet.",
+      "settings": "Version V{{number}}",
+      "settingsShort": "Paramètres de la version",
+      "settingsHint": "Nom, coefficient et statut de cette version.",
+      "coefLocked": "Verrouillé : la version n’est plus un brouillon.",
+      "statusHint": "Les versions remises et approuvées sont en lecture seule.",
+      "current": "Version de référence",
+      "makeCurrent": "En faire la version de référence",
+      "nowCurrent": "Cette version est désormais la référence",
+      "isCurrentHint": "C’est la version de référence : elle alimente le budget, l’avancement et la facturation.",
+      "lockedBanner": "Cette version n’est plus un brouillon : elle est en lecture seule. Créez une nouvelle version pour la modifier.",
+      "statuses": {
+        "draft": "Brouillon",
+        "submitted": "Remise",
+        "approved": "Approuvée"
+      }
+    },
+    "boq": {
+      "searchItems": "Rechercher un article…",
+      "expandAll": "Tout déplier",
+      "collapseAll": "Tout replier",
+      "expand": "Déplier",
+      "collapse": "Replier",
+      "dragDisabledSearch": "Effacez la recherche pour réordonner.",
+      "emptyTitle": "Aucune section",
+      "emptyHint": "Ajoutez une première section (par exemple « Terrassements »), puis ses articles.",
+      "newSection": "Ajouter une section",
+      "newSectionPlaceholder": "Titre de la nouvelle section…",
+      "sectionTitle": "Titre de la section",
+      "itemCount": "{{count}} articles",
+      "deleteSection": "Supprimer la section",
+      "deleteSectionTitle": "Supprimer cette section ?",
+      "deleteSectionBody": "« {{title}} » et tous ses articles seront retirés de cette version.",
+      "dragSection": "Glisser pour déplacer la section",
+      "dragItem": "Glisser pour déplacer l’article",
+      "fromTakeoff": "Quantité issue du métré",
+      "openTakeoff": "Ouvrir le métré",
+      "fromAnalysis": "Prix issu d’un sous-détail",
+      "priceOverridden": "Prix de vente saisi manuellement",
+      "itemDetails": "Détails, métré et prix",
+      "itemDeleted": "Article supprimé",
+      "newItemPlaceholder": "Désignation du nouvel article…",
+      "addItem": "Ajouter",
+      "renumber": "Renuméroter",
+      "renumbered": "Sections et articles renumérotés"
+    },
+    "item": {
+      "section": "Section",
+      "summary": "{{quantity}} {{unit}} × {{price}} = {{total}}",
+      "quantitySource": "Origine de la quantité",
+      "sources": {
+        "manual": "Saisie directe",
+        "takeoff": "Somme des lignes de métré"
+      },
+      "pricing": "Prix",
+      "pricingModes": {
+        "manual": "Déboursé sec saisi",
+        "analysis": "Issu d’un sous-détail de prix"
+      },
+      "analysis": "Sous-détail de prix",
+      "chooseAnalysis": "Choisir un sous-détail…",
+      "analysisHint": "Déboursé sec {{dry}} → prix de vente {{price}}",
+      "priceOverride": "Prix de vente (facultatif)",
+      "priceOverrideHint": "Laissez vide pour appliquer déboursé sec × coefficient."
+    },
+    "takeoff": {
+      "label": "Désignation",
+      "count": "Nb",
+      "length": "Longueur",
+      "width": "Largeur",
+      "height": "Hauteur",
+      "result": "Résultat",
+      "total": "Quantité de l’article",
+      "empty": "Aucune ligne de métré.",
+      "addLine": "Ajouter une ligne",
+      "toggleDeduction": "Basculer entre ajout et déduction",
+      "hint": "Une dimension vide compte pour 1. Un nombre négatif est une déduction."
+    },
+    "upa": {
+      "title": "Sous-détails",
+      "new": "Nouveau",
+      "create": "Créer le sous-détail",
+      "empty": "Aucun sous-détail de prix dans cette version.",
+      "emptyTitle": "Sélectionnez ou créez un sous-détail",
+      "emptyHint": "Un sous-détail calcule le déboursé sec d’une unité d’ouvrage à partir des ressources, puis applique le coefficient.",
+      "perUnit": "Pour une unité de",
+      "coefficient": "Coefficient (K)",
+      "coefficientHint": "Vide = coefficient de la version ({{value}}).",
+      "currencyNote": "Les ressources doivent être en {{currency}}, la devise du projet.",
+      "consumption": "Quantité par unité",
+      "waste": "Pertes",
+      "amount": "Montant",
+      "noComponents": "Aucune ressource : cherchez dans la bibliothèque ci-dessous ou ajoutez une ligne libre.",
+      "searchLibrary": "Rechercher dans la bibliothèque ({{currency}})…",
+      "noResources": "Aucune ressource en {{currency}} ne correspond.",
+      "freeLine": "Désignation de la ligne libre…",
+      "addLine": "Ajouter la ligne",
+      "dryCost": "Déboursé sec",
+      "sellingPrice": "Prix de vente par {{unit}}",
+      "usedBy": "Utilisé par {{count}} article(s)",
+      "refreshPrices": "Actualiser les prix depuis la bibliothèque",
+      "refreshed": "{{count}} prix mis à jour",
+      "deleteTitle": "Supprimer ce sous-détail ?",
+      "deleteBody": "{{code}} est utilisé par {{count}} article(s). Ils conservent son déboursé sec comme prix saisi."
+    },
+    "compare": {
+      "title": "Comparaison",
+      "before": "Version A (avant)",
+      "after": "Version B (après)",
+      "show": "Afficher",
+      "onlyChanges": "Seulement les écarts",
+      "everything": "Tous les articles",
+      "status": "Écart",
+      "delta": "Différence",
+      "needTwo": "Créez une deuxième version pour comparer.",
+      "noDifferences": "Aucun écart.",
+      "statuses": {
+        "added": "Ajouté",
+        "removed": "Supprimé",
+        "changed": "Modifié",
+        "unchanged": "Identique"
+      }
+    },
+    "exports": {
+      "button": "Exporter",
+      "kinds": {
+        "boq-priced": "DQE chiffré",
+        "boq-unpriced": "DQE non chiffré (appel d’offres)",
+        "upa": "Sous-détails de prix"
+      },
+      "formats": {
+        "xlsx": "Excel",
+        "pdf": "PDF"
+      },
+      "pricedTitle": "Devis quantitatif et estimatif",
+      "unpricedTitle": "Bordereau des prix — DQE non chiffré",
+      "upaTitle": "Sous-détails de prix",
+      "version": "Version",
+      "date": "Date",
+      "arabicNote": "Les PDF sont produits en français."
+    }
   }
 }

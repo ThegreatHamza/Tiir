@@ -230,6 +230,186 @@ async function main() {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Phase 1 — price library and a first estimate for each project
+  // -------------------------------------------------------------------------
+  console.log("→ price library");
+  const resources = [
+    ["CIM-425", "Ciment CPJ 42.5 (sac 50 kg)", "material", "t", 26000, "DJF"],
+    ["SAB-05", "Sable 0/5", "material", "m3", 4000, "DJF"],
+    ["GRA-1525", "Gravier 15/25", "material", "m3", 5500, "DJF"],
+    ["HA-12", "Acier HA Fe E400", "material", "kg", 230, "DJF"],
+    ["AGG-15", "Agglos creux 15×20×40", "material", "u", 120, "DJF"],
+    ["EAU", "Eau de gâchage", "material", "m3", 600, "DJF"],
+    ["MO-CHEF", "Chef d'équipe", "labour", "h", 900, "DJF"],
+    ["MO-MAC", "Maçon", "labour", "h", 600, "DJF"],
+    ["MO-MAN", "Manœuvre", "labour", "h", 350, "DJF"],
+    ["BET-350", "Bétonnière 350 L", "equipment", "day", 9000, "DJF"],
+    ["PEL-MEC", "Pelle mécanique avec conducteur", "equipment", "h", 18000, "DJF"],
+    ["ST-ETAN", "Étanchéité toiture (sous-traitance)", "subcontract", "m2", 6500, "DJF"],
+    ["CEM-ET", "Cement OPC 42.5", "material", "t", 9800, "ETB"],
+    ["MO-DL", "Daily labourer", "labour", "day", 450, "ETB"],
+  ];
+  // Inserted directly: the import RPC checks the caller's role, and the service role has no caller.
+  for (const [code, name, kind, unit, unit_cost, currency] of resources) {
+    const found = await db
+      .from("price_resources")
+      .select("id")
+      .eq("company_id", companyId)
+      .eq("code", code)
+      .is("deleted_at", null)
+      .maybeSingle()
+      .then(must("resource lookup"));
+    if (!found)
+      await db
+        .from("price_resources")
+        .insert({ company_id: companyId, code, name, kind, unit, unit_cost, currency, created_by: ids.owner })
+        .then(must(`resource ${code}`));
+  }
+  const res = Object.fromEntries(
+    (
+      await db
+        .from("price_resources")
+        .select("id, code, kind, name, unit, unit_cost")
+        .eq("company_id", companyId)
+        .is("deleted_at", null)
+        .then(must("resources"))
+    ).map((r) => [r.code, r]),
+  );
+
+  console.log("→ estimate (school project)");
+  const projectId = projects[0];
+  let version = await db
+    .from("boq_versions")
+    .select("id")
+    .eq("project_id", projectId)
+    .is("deleted_at", null)
+    .limit(1)
+    .maybeSingle()
+    .then(must("version lookup"));
+  if (!version) {
+    const scope = { company_id: companyId, project_id: projectId, created_by: ids.owner };
+    version = await db
+      .from("boq_versions")
+      .insert({ ...scope, number: 1, name: "Offre initiale", coefficient: 1.25, is_current: true })
+      .select("id")
+      .single()
+      .then(must("version"));
+    const v = { ...scope, version_id: version.id };
+
+    const upa = await db
+      .from("unit_price_analyses")
+      .insert({ ...v, code: "BA350", title: "Béton armé dosé à 350 kg/m³", unit: "m3" })
+      .select("id")
+      .single()
+      .then(must("upa"));
+    const comps = [
+      ["CIM-425", 0.35, 0],
+      ["SAB-05", 0.4, 5],
+      ["GRA-1525", 0.8, 5],
+      ["HA-12", 80, 3],
+      ["EAU", 0.2, 0],
+      ["MO-CHEF", 1, 0],
+      ["MO-MAC", 6, 0],
+      ["MO-MAN", 10, 0],
+      ["BET-350", 0.15, 0],
+    ];
+    await db
+      .from("unit_price_components")
+      .insert(
+        comps.map(([code, quantity, waste_rate], i) => {
+          const r = res[code];
+          return {
+            ...v,
+            upa_id: upa.id,
+            resource_id: r.id,
+            kind: r.kind,
+            designation: r.name,
+            unit: r.unit,
+            quantity,
+            unit_cost: r.unit_cost,
+            waste_rate,
+            position: i + 1,
+          };
+        }),
+      )
+      .then(must("components"));
+
+    const s1 = await db
+      .from("boq_sections")
+      .insert({ ...v, code: "1", title: "Terrassements", position: 1 })
+      .select("id")
+      .single()
+      .then(must("section 1"));
+    const s2 = await db
+      .from("boq_sections")
+      .insert({ ...v, code: "2", title: "Gros œuvre", position: 2 })
+      .select("id")
+      .single()
+      .then(must("section 2"));
+    const s3 = await db
+      .from("boq_sections")
+      .insert({ ...v, code: "3", title: "Étanchéité", position: 3 })
+      .select("id")
+      .single()
+      .then(must("section 3"));
+
+    const item = (section_id, position, code, description, unit, extra) =>
+      db
+        .from("boq_items")
+        .insert({ ...v, section_id, position, code, description, unit, ...extra })
+        .select("id")
+        .single()
+        .then(must(`item ${code}`));
+    await item(s1.id, 1, "1.1", "Décapage de la terre végétale sur 20 cm", "m2", { quantity: 1250, unit_cost: 450 });
+    const fouilles = await item(s1.id, 2, "1.2", "Fouilles en rigole pour semelles filantes", "m3", {
+      quantity_source: "takeoff",
+      unit_cost: 2800,
+    });
+    const semelles = await item(s2.id, 1, "2.1", "Béton armé pour semelles isolées", "m3", { quantity_source: "takeoff", upa_id: upa.id });
+    await item(s2.id, 2, "2.2", "Maçonnerie d'agglos creux de 15", "m2", { quantity: 860, unit_cost: 4200 });
+    await item(s3.id, 1, "3.1", "Étanchéité multicouche de toiture-terrasse", "m2", { quantity: 640, unit_cost: 6500 });
+    await item(s3.id, 2, "3.2", "Installation et repli de chantier", "ff", { quantity: 1, unit_price: 1500000 });
+
+    await db
+      .from("takeoff_lines")
+      .insert([
+        { ...v, item_id: fouilles.id, position: 1, label: "Axes A–D", count: 2, length: 42.5, width: 0.6, height: 0.8 },
+        { ...v, item_id: fouilles.id, position: 2, label: "Axes 1–6", count: 2, length: 28, width: 0.6, height: 0.8 },
+        {
+          ...v,
+          item_id: semelles.id,
+          position: 1,
+          label: "Semelles S1 (1,20 × 1,20 × 0,40)",
+          count: 12,
+          length: 1.2,
+          width: 1.2,
+          height: 0.4,
+        },
+        {
+          ...v,
+          item_id: semelles.id,
+          position: 2,
+          label: "Semelles S2 (1,50 × 1,50 × 0,45)",
+          count: 6,
+          length: 1.5,
+          width: 1.5,
+          height: 0.45,
+        },
+        {
+          ...v,
+          item_id: semelles.id,
+          position: 3,
+          label: "Réservation regard (à déduire)",
+          count: -1,
+          length: 0.6,
+          width: 0.6,
+          height: 0.4,
+        },
+      ])
+      .then(must("takeoff"));
+  }
+
   console.log("\n✓ Demo data ready. Sign in with any of these (password: %s):", PASSWORD);
   for (const u of USERS) console.log(`  ${u.role.padEnd(16)} ${u.email}`);
 }

@@ -72,8 +72,11 @@
     "kg": "kg",
     "t": "tan",
     "u": "xabbo",
-    "ml": "mitir dherer",
-    "ff": "lacag go'an (wadar)"
+    "ml": "m.d",
+    "ff": "wadar",
+    "h": "saac",
+    "day": "maalin",
+    "l": "l"
   },
   "glossary": {
     "boq": "Liiska tirada iyo qiimaha (BoQ)",
@@ -115,7 +118,9 @@
     "clients": "Macaamiil",
     "members": "Xubnaha",
     "companySettings": "Dejinta shirkadda",
-    "account": "Akoonkayga"
+    "account": "Akoonkayga",
+    "sectionEstimating": "Qiimaynta",
+    "priceLibrary": "Maktabadda qiimaha"
   },
   "auth": {
     "tagline": "Qiimee, qorshee, dhis oo biil gudbi — hal xog-ururin.",
@@ -351,5 +356,244 @@
     "goHome": "Ku noqo bogga hore",
     "configMissing": "Tiir lama dejin",
     "configMissingHint": "Geli URL-ka Supabase iyo furaha anon fayl .env ah, kadibna dib u kici."
+  },
+  "pdf": {
+    "no": "Lr.",
+    "page": "Bogga {{page}} / {{pages}}",
+    "subtotal": "Wadarta hoose {{code}} — {{title}}",
+    "totalHt": "Wadarta aan VAT ku jirin",
+    "vat": "VAT {{rate}} %",
+    "totalTtc": "Wadarta VAT ku jirto",
+    "perUnit": "Halkii {{unit}}",
+    "tenderNote": "Qiimayaasha iyo lacagaha waxaa buuxinaya tartamaha. Tirooyinku waa tilmaan, waxaana lagu cabbiri doonaa goobta."
+  },
+  "estimating": {
+    "title": "Qiimaynta",
+    "open": "Qiimaynta",
+    "designation": "Sharaxaad",
+    "unit": "Halbeeg",
+    "unitShort": "Halb.",
+    "quantity": "Tirada",
+    "unitCost": "Qiimaha halbeegga",
+    "dryUnitCost": "Kharashka tooska ah ee halbeegga",
+    "unitPrice": "Qiimaha iibka halbeegga",
+    "unitPriceShort": "Qiimaha halb. ({{currency}})",
+    "amount": "Lacagta ({{currency}})",
+    "total": "Wadarta",
+    "kinds": {
+      "material": "Agab",
+      "labour": "Shaqaale",
+      "equipment": "Qalab",
+      "subcontract": "Qandaraas-hoosaad"
+    },
+    "tabs": {
+      "boq": "Liiska tirada (BoQ)",
+      "analyses": "Falanqaynta qiimaha halbeegga",
+      "compare": "Isbarbardhig noocyada"
+    },
+    "summary": {
+      "dryCost": "Kharashka tooska ah",
+      "margin": "Faa'iidada"
+    },
+    "resources": {
+      "title": "Maktabadda qiimaha",
+      "subtitle": "Qiimaha agabka, shaqaalaha, qalabka iyo qandaraas-hoosaadka ee lagu dhiso qiimayaasha halbeegga.",
+      "new": "Kheyraad cusub",
+      "edit": "Wax ka beddel kheyraadka",
+      "formHint": "Qiimaha waxaa lagu koobiyeeyaa falanqaynta isticmaasha; cusboonaysii falanqaynta si aad u qaadato qiime cusub.",
+      "kind": "Nooca",
+      "supplier": "Alaab-qeybiye",
+      "updated": "La cusboonaysiiyay",
+      "allKinds": "Dhammaan noocyada",
+      "allCurrencies": "Dhammaan lacagaha",
+      "emptyTitle": "Maktabadda qiimaha waa madhan tahay",
+      "emptyHint": "Ku dar kheyraadka mid-mid ama ka soo dhoofi Excel.",
+      "deleteTitle": "Ma tirtiraysaa kheyraadkan?",
+      "deleteBody": "“{{name}}” lama soo jeedin doono. Falanqaynta horey u isticmaashay waxay haysanayaan qiimahooda."
+    },
+    "import": {
+      "title": "Ka soo dhoofi Excel",
+      "short": "Soo dhoofi",
+      "hint": "Xaashida koowaad ee fayl .xlsx, .xls ama .csv. Tiirarka: koodh, sharaxaad, nooc, halbeeg, qiimaha halbeegga, lacag (ikhtiyaari), alaab-qeybiye (ikhtiyaari). Koodhadhka jira waa la cusboonaysiinayaa.",
+      "chooseFile": "Dooro fayl",
+      "template": "Soo deji tusaale",
+      "templateName": "Tusaalaha maktabadda qiimaha",
+      "sampleCement": "Shamiito 42.5",
+      "sampleMason": "Dhisme-yaqaan",
+      "tooLarge": "Faylku wuu ka weyn yahay 10 MB.",
+      "unreadable": "Faylkan lama akhrin karo.",
+      "summary": "{{valid}} saf oo sax ah, {{errors}} saf oo khalad leh (laga booday).",
+      "noHeader": "Safka madaxa lama helin: waxaa loo baahan yahay ugu yaraan tiirarka koodh, sharaxaad iyo qiimaha halbeegga.",
+      "error": "Safka {{row}}: {{field}} {{reason}}",
+      "confirm": "Soo dhoofi {{count}} saf",
+      "done": "{{inserted}} la daray, {{updated}} la cusboonaysiiyay.",
+      "fields": {
+        "code": "koodhka",
+        "name": "sharaxaadda",
+        "kind": "nooca",
+        "unit": "halbeegga",
+        "unit_cost": "qiimaha halbeegga",
+        "currency": "lacagta",
+        "supplier_name": "alaab-qeybiyaha"
+      },
+      "reasons": {
+        "missing": "waa maqan yahay",
+        "invalid": "ma saxna",
+        "duplicate": "waa labanlaaban"
+      }
+    },
+    "versions": {
+      "choose": "Nooca BoQ",
+      "new": "Nooc cusub",
+      "newHint": "Ka bilow liis madhan ama koobiyee nooc jira (qaybaha, shayada, cabbirka iyo falanqaynta).",
+      "nameHint": "Banaan u daa si magac si toos ah loo bixiyo.",
+      "startFrom": "Ka bilow",
+      "empty": "Liis tiro oo madhan",
+      "copyOf": "Koobi ka mid ah {{label}}",
+      "created": "Nooca waa la abuuray",
+      "createFirst": "Abuur nooca koowaad",
+      "noneTitle": "Weli liis tiro ma jiro",
+      "noneHint": "Abuur nooc koowaad si aad u bilowdo cabbirka iyo qiimaynta.",
+      "noneReadOnly": "Weli qiimayn looma diyaarin mashruucan.",
+      "settings": "Nooca V{{number}}",
+      "settingsShort": "Dejinta nooca",
+      "settingsHint": "Magaca, isku-dhufaha iyo xaaladda noocan.",
+      "coefLocked": "Waa la xiray: noocu mar dambe qabyo ma aha.",
+      "statusHint": "Noocyada la gudbiyay iyo kuwa la ansixiyay waa akhris keliya.",
+      "current": "Nooca tixraaca",
+      "makeCurrent": "Ka dhig nooca tixraaca",
+      "nowCurrent": "Noocani hadda waa tixraaca",
+      "isCurrentHint": "Kani waa nooca tixraaca: wuxuu wadaa miisaaniyadda, horumarka iyo biil-bixinta.",
+      "lockedBanner": "Noocani qabyo ma aha, sidaas darteed waa akhris keliya. Abuur nooc cusub si aad wax uga beddesho.",
+      "statuses": {
+        "draft": "Qabyo",
+        "submitted": "La gudbiyay",
+        "approved": "La ansixiyay"
+      }
+    },
+    "boq": {
+      "searchItems": "Raadi shay…",
+      "expandAll": "Fidi dhammaan",
+      "collapseAll": "Laab dhammaan",
+      "expand": "Fidi",
+      "collapse": "Laab",
+      "dragDisabledSearch": "Tirtir raadinta si aad dib u habayso.",
+      "emptyTitle": "Weli qaybo ma jiraan",
+      "emptyHint": "Ku dar qayb koowaad (tusaale “Qodista dhulka”), kadibna shayadeeda.",
+      "newSection": "Ku dar qayb",
+      "newSectionPlaceholder": "Cinwaanka qaybta cusub…",
+      "sectionTitle": "Cinwaanka qaybta",
+      "itemCount": "{{count}} shay",
+      "deleteSection": "Tirtir qaybta",
+      "deleteSectionTitle": "Ma tirtiraysaa qaybtan?",
+      "deleteSectionBody": "“{{title}}” iyo dhammaan shayadeeda waa laga saarayaa noocan.",
+      "dragSection": "Jiid si aad u beddesho meesha qaybta",
+      "dragItem": "Jiid si aad u beddesho meesha shayga",
+      "fromTakeoff": "Tirada waxay ka timid cabbirka",
+      "openTakeoff": "Fur cabbirka",
+      "fromAnalysis": "Qiimaha wuxuu ka yimid falanqayn",
+      "priceOverridden": "Qiimaha iibka gacanta ayaa lagu geliyay",
+      "itemDetails": "Faahfaahin, cabbir iyo qiimayn",
+      "itemDeleted": "Shayga waa la tirtiray",
+      "newItemPlaceholder": "Sharaxaadda shayga cusub…",
+      "addItem": "Ku dar",
+      "renumber": "Dib u lambaree",
+      "renumbered": "Qaybaha iyo shayada dib ayaa loo lambareeyay"
+    },
+    "item": {
+      "section": "Qaybta",
+      "summary": "{{quantity}} {{unit}} × {{price}} = {{total}}",
+      "quantitySource": "Halka tiradu ka timid",
+      "sources": {
+        "manual": "Si toos ah loo geliyay",
+        "takeoff": "Wadarta safafka cabbirka"
+      },
+      "pricing": "Qiimaynta",
+      "pricingModes": {
+        "manual": "Kharash toos ah oo la geliyay",
+        "analysis": "Falanqaynta qiimaha halbeegga"
+      },
+      "analysis": "Falanqaynta qiimaha halbeegga",
+      "chooseAnalysis": "Dooro falanqayn…",
+      "analysisHint": "Kharash toos ah {{dry}} → qiimaha iibka {{price}}",
+      "priceOverride": "Qiimaha iibka (ikhtiyaari)",
+      "priceOverrideHint": "Banaan u daa si loo isticmaalo kharash toos ah × isku-dhufe."
+    },
+    "takeoff": {
+      "label": "Sharaxaad",
+      "count": "Tiro",
+      "length": "Dherer",
+      "width": "Ballac",
+      "height": "Joog",
+      "result": "Natiijo",
+      "total": "Tirada shayga",
+      "empty": "Weli safaf cabbir ma jiraan.",
+      "addLine": "Ku dar saf",
+      "toggleDeduction": "U beddel ku-darid iyo ka-jarid",
+      "hint": "Cabbir banaan wuxuu u dhigmaa 1. Tiro taban waa ka-jarid."
+    },
+    "upa": {
+      "title": "Falanqaynta",
+      "new": "Cusub",
+      "create": "Abuur falanqaynta",
+      "empty": "Falanqayn qiime halbeeg kuma jirto noocan.",
+      "emptyTitle": "Dooro ama abuur falanqayn",
+      "emptyHint": "Falanqayntu waxay xisaabisaa kharashka tooska ah ee hal halbeeg oo shaqo ah, kadibna waxay ku dabaqdaa isku-dhufaha.",
+      "perUnit": "Halkii halbeeg",
+      "coefficient": "Isku-dhufe",
+      "coefficientHint": "Banaan = isku-dhufaha nooca ({{value}}).",
+      "currencyNote": "Kheyraadka waa in lagu qiimeeyaa {{currency}}, lacagta mashruuca.",
+      "consumption": "Tirada halkii halbeeg",
+      "waste": "Khasaare",
+      "amount": "Lacagta",
+      "noComponents": "Weli kheyraad ma jiro: ka raadi maktabadda hoose ama ku dar saf xor ah.",
+      "searchLibrary": "Ka raadi maktabadda qiimaha ({{currency}})…",
+      "noResources": "Ma jiro kheyraad {{currency}} ah oo u dhigma.",
+      "freeLine": "Sharaxaadda safka xorka ah…",
+      "addLine": "Ku dar safka",
+      "dryCost": "Kharashka tooska ah",
+      "sellingPrice": "Qiimaha iibka halkii {{unit}}",
+      "usedBy": "Waxaa isticmaala {{count}} shay",
+      "refreshPrices": "Ka cusboonaysii qiimaha maktabadda",
+      "refreshed": "{{count}} qiime ayaa la cusboonaysiiyay",
+      "deleteTitle": "Ma tirtiraysaa falanqayntan?",
+      "deleteBody": "{{code}} waxaa isticmaala {{count}} shay. Waxay haysanayaan kharashkiisa tooska ah oo ah qiime la geliyay."
+    },
+    "compare": {
+      "title": "Isbarbardhig",
+      "before": "Nooca A (kahor)",
+      "after": "Nooca B (kadib)",
+      "show": "Muuji",
+      "onlyChanges": "Kaliya kala duwanaanshaha",
+      "everything": "Dhammaan shayada",
+      "status": "Isbeddel",
+      "delta": "Farqi",
+      "needTwo": "Abuur nooc labaad si aad isbarbardhig u samayso.",
+      "noDifferences": "Kala duwanaansho ma jiro.",
+      "statuses": {
+        "added": "La daray",
+        "removed": "La saaray",
+        "changed": "La beddelay",
+        "unchanged": "Isma beddelin"
+      }
+    },
+    "exports": {
+      "button": "Dhoofi",
+      "kinds": {
+        "boq-priced": "Liiska tirada oo la qiimeeyay",
+        "boq-unpriced": "Liiska tirada aan la qiimeyn (tender)",
+        "upa": "Falanqaynta qiimaha halbeegga"
+      },
+      "formats": {
+        "xlsx": "Excel",
+        "pdf": "PDF"
+      },
+      "pricedTitle": "Liiska tirada oo la qiimeeyay",
+      "unpricedTitle": "Liiska tirada ee tartanka",
+      "upaTitle": "Falanqaynta qiimaha halbeegga",
+      "version": "Nooca",
+      "date": "Taariikhda",
+      "arabicNote": "Dukumentiyada PDF waxaa lagu soo saaraa Faransiis."
+    }
   }
 }

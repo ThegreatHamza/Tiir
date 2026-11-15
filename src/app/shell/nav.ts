@@ -1,4 +1,4 @@
-import { Building2, FolderKanban, Settings, UserCircle, Users, type LucideIcon } from "lucide-react";
+import { BookOpen, Building2, FolderKanban, Settings, UserCircle, Users, type LucideIcon } from "lucide-react";
 import { can, type AppRole } from "@/lib/roles";
 
 export type NavItem = {
@@ -18,6 +18,10 @@ export const NAV: NavSection[] = [
   {
     labelKey: "nav.sectionWork",
     items: [{ to: "/projects", labelKey: "nav.projects", icon: FolderKanban, visible: () => true }],
+  },
+  {
+    labelKey: "nav.sectionEstimating",
+    items: [{ to: "/price-library", labelKey: "nav.priceLibrary", icon: BookOpen, visible: (r) => can.seeCosts(r) }],
   },
   {
     labelKey: "nav.sectionCompany",

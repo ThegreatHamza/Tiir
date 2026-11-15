@@ -15,6 +15,9 @@ import { AppShell } from "./shell/AppShell";
 import { NotFoundPage, RouteErrorPage } from "./ErrorPages";
 import { Root } from "./Root";
 
+/** Roles allowed to see prices and costs (mirrors can_see_costs in SQL). */
+const COST_ROLES = ["owner", "admin", "project_manager", "estimator", "accountant"] as const;
+
 export const router = createBrowserRouter([
   {
     element: <Root />,
@@ -52,6 +55,33 @@ export const router = createBrowserRouter([
                   { index: true, element: <Navigate to="/projects" replace /> },
                   { path: "/projects", element: <ProjectsPage /> },
                   { path: "/projects/:projectId", element: <ProjectDetailPage /> },
+                  // Estimating is desktop-first and heavy: loaded only when opened.
+                  {
+                    path: "/projects/:projectId/estimate",
+                    lazy: async () => {
+                      const { EstimatePage } = await import("@/features/estimating/EstimatePage");
+                      return {
+                        element: (
+                          <RequireRole roles={COST_ROLES}>
+                            <EstimatePage />
+                          </RequireRole>
+                        ),
+                      };
+                    },
+                  },
+                  {
+                    path: "/price-library",
+                    lazy: async () => {
+                      const { PriceLibraryPage } = await import("@/features/estimating/PriceLibraryPage");
+                      return {
+                        element: (
+                          <RequireRole roles={COST_ROLES}>
+                            <PriceLibraryPage />
+                          </RequireRole>
+                        ),
+                      };
+                    },
+                  },
                   {
                     path: "/clients",
                     element: (

@@ -2,17 +2,10 @@ import type { Config } from "tailwindcss";
 import plugin from "tailwindcss/plugin";
 import animate from "tailwindcss-animate";
 
-/**
- * Tiir theme — the ONLY place brand colours are defined.
- * Sampled from the Tiir logo (public/brand/tiir-logo-original.png):
- *   navy  #0B2845 (wordmark "T", "r", tile background)
- *   amber #F3A00B (the two pillars)
- * Everything else (shadcn tokens, light/dark) is derived from these two.
- */
-export const brand = {
-  navy: "#0B2845",
-  amber: "#F3A00B",
-} as const;
+import { brand } from "./src/theme/brand";
+
+/** Tiir theme. Brand colours come from src/theme/brand.ts; every token below is derived from them. */
+export { brand };
 
 function hexToHsl(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);
