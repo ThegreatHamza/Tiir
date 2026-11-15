@@ -4,7 +4,7 @@
 
 French (default), English, Arabic (fully right-to-left) and Somali · DJF, ETB, USD · light and dark themes · built for laptops in the office and Android phones on site.
 
-> **Status: Phase 1 (Estimating) done.** Phase 0 (auth, companies, roles, projects, RLS, four languages) and Phase 1 (price library, unit price analyses, takeoff, BoQ editor with versions, comparison and exports) are done. Next: Phase 2 (Planning). See [Roadmap](#roadmap).
+> **Status: all phases (0–10) done.** Estimating, planning, site diary (offline), costs and earned value, client billing, procurement and stock, labour and payroll, equipment, documents and quality, dashboards and the client portal. See [Roadmap](#roadmap).
 
 ## Estimating in two minutes
 
@@ -79,7 +79,7 @@ Password for all: `Tiir-demo-2026` (change it with `SEED_PASSWORD=...`).
 | `npm run lint:i18n` | Checks that all 4 languages have the same keys, that every key used in the code exists, and that no text is hard-coded in JSX |
 | `npm run build` | Production build |
 | `npm run check` | All of the above |
-| `npm run db:test` | Applies the migrations and runs the SQL test files (RLS and estimating totals) against local Supabase |
+| `npm run db:test` | Applies the migrations and runs the SQL test files (RLS, estimating, modules, platform/performance) against local Supabase |
 | `DATABASE_URL=… npm run db:test -- --plain` | Same, against any throwaway Postgres 15+ (no Docker) |
 | `npm run db:types` | Regenerates `src/types/database.ts` from the local schema |
 | `npm run seed` | Demo data |
@@ -92,7 +92,11 @@ src/
   app/                  router, providers, app shell (sidebar, top bar), error pages
   components/ui/        shadcn/ui primitives
   components/common/    DataTable (search, filters, sort, pagination, Excel), states, dialogs
-  features/             auth, companies, members, projects, clients, settings, account, notifications, estimating
+  features/             auth, companies, members, projects, clients, settings, account, notifications,
+                        estimating, planning, site, issues, costs, billing, procurement, stock, labour,
+                        equipment, documents, quality, dashboard, portal, calendars
+  components/crud/      generic register screen (list + form) used by most modules
+  lib/offline/          offline queue (Dexie), sync, persisted query cache
   i18n/locales/         fr.json, en.json, ar.json, so.json
   lib/                  supabase client, roles, formatting, list helpers, export
   lib/calc/             pure, unit-tested calculation functions
@@ -102,6 +106,8 @@ supabase/
   functions/            Edge Functions (invite-member)
   tests/rls_test.sql          proves tenant isolation and role limits
   tests/estimating_test.sql   proves estimating totals, version locking and that site roles never see prices
+  tests/modules_test.sql      planning, site, billing, procurement, payroll, equipment, documents, portal rules
+  tests/platform_test.sql     structure rules on every table and a 5 000-item performance check
 scripts/                seed, DB test runner, i18n checker
 DECISIONS.md            every assumption made
 ```
@@ -121,12 +127,12 @@ DECISIONS.md            every assumption made
 |---|---|---|
 | 0 | Setup, theme, 4 languages + RTL, auth, companies, members, roles, projects, RLS, app shell | ✅ |
 | 1 | Estimating: price library, unit price analysis, takeoff, BoQ editor, exports | ✅ |
-| 2 | Planning: WBS, Gantt, dependencies, critical path, baselines | ⏳ next |
-| 3 | Site: daily reports, PWA, offline queue | |
-| 4 | Cost control and billing | |
-| 5 | Procurement and stock | |
-| 6 | Labour and payroll | |
-| 7 | Equipment | |
-| 8 | Documents and quality | |
-| 9 | Dashboards and client portal | |
-| 10 | Hardening | |
+| 2 | Planning: WBS, Gantt, dependencies, critical path, baselines, calendars | ✅ |
+| 3 | Site: daily reports, photos, issues, PWA, offline queue | ✅ |
+| 4 | Cost control (earned value, cash flow) and client billing (progress claims) | ✅ |
+| 5 | Procurement and stock | ✅ |
+| 6 | Labour and payroll | ✅ |
+| 7 | Equipment | ✅ |
+| 8 | Documents, drawings, RFIs, quality and safety | ✅ |
+| 9 | Dashboards and client portal | ✅ |
+| 10 | Hardening: structure tests, cross-company test on every table, 5 000-item performance | ✅ |

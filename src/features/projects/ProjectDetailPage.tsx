@@ -2,10 +2,9 @@ import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Calculator, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { Calculator, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
@@ -18,7 +17,6 @@ import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { fetchProject, setProjectDeleted, updateProject } from "./api";
 import { ProjectFormDialog, type ProjectFormValues } from "./ProjectFormDialog";
-import { ProjectStatusBadge } from "./ProjectStatusBadge";
 import { ProjectTeam } from "./ProjectTeam";
 import { ProjectSettingsCard } from "./ProjectSettingsCard";
 import { toProjectPayload } from "./ProjectsPage";
@@ -85,18 +83,7 @@ export function ProjectDetailPage() {
   return (
     <div className="grid gap-4">
       <div>
-        <Link to="/projects" className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden /> {t("projects.backToList")}
-        </Link>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-mono text-xs text-muted-foreground ltr-nums">{project.code}</p>
-            <h1 className="flex flex-wrap items-center gap-2 text-xl font-semibold">
-              {project.name}
-              <ProjectStatusBadge status={project.status} />
-              {deleted ? <Badge variant="destructive">{t("common.deletedLabel")}</Badge> : null}
-            </h1>
-          </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
           <div className="flex flex-wrap gap-2">
             {can.seeCosts(role) ? (
               <Button asChild>

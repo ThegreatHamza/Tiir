@@ -1,4 +1,19 @@
-import { BookOpen, Building2, FolderKanban, Settings, UserCircle, Users, type LucideIcon } from "lucide-react";
+import {
+  BookOpen,
+  Building2,
+  CalendarDays,
+  ClipboardCheck,
+  FolderKanban,
+  Handshake,
+  HardHat,
+  LayoutDashboard,
+  Settings,
+  Truck,
+  UserCircle,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 import { can, type AppRole } from "@/lib/roles";
 
 export type NavItem = {
@@ -10,18 +25,45 @@ export type NavItem = {
 
 export type NavSection = { labelKey: string; items: NavItem[] };
 
+const is =
+  (...roles: AppRole[]) =>
+  (r: AppRole) =>
+    roles.includes(r);
+
 /**
- * Navigation shows only modules that exist. Each phase adds its section here
- * (estimating, planning, site, …) — no placeholder pages.
+ * Company-level navigation. Project modules (estimate, planning, site, …) live
+ * in the project menu. Each entry mirrors the route guard in router.tsx.
  */
 export const NAV: NavSection[] = [
   {
     labelKey: "nav.sectionWork",
-    items: [{ to: "/projects", labelKey: "nav.projects", icon: FolderKanban, visible: () => true }],
+    items: [
+      { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, visible: (r) => can.seeCosts(r) },
+      { to: "/portal", labelKey: "nav.portal", icon: LayoutDashboard, visible: is("client_viewer") },
+      { to: "/projects", labelKey: "nav.projects", icon: FolderKanban, visible: () => true },
+    ],
   },
   {
-    labelKey: "nav.sectionEstimating",
-    items: [{ to: "/price-library", labelKey: "nav.priceLibrary", icon: BookOpen, visible: (r) => can.seeCosts(r) }],
+    labelKey: "nav.sectionResources",
+    items: [
+      { to: "/price-library", labelKey: "nav.priceLibrary", icon: BookOpen, visible: (r) => can.seeCosts(r) },
+      {
+        to: "/suppliers",
+        labelKey: "nav.suppliers",
+        icon: Handshake,
+        visible: is("owner", "admin", "project_manager", "storekeeper", "accountant", "estimator"),
+      },
+      {
+        to: "/workers",
+        labelKey: "nav.workers",
+        icon: HardHat,
+        visible: is("owner", "admin", "project_manager", "site_foreman", "accountant"),
+      },
+      { to: "/payroll", labelKey: "nav.payroll", icon: Wallet, visible: (r) => can.seeFinance(r) },
+      { to: "/equipment", labelKey: "nav.equipment", icon: Truck, visible: (r) => r !== "client_viewer" },
+      { to: "/checklists", labelKey: "nav.checklists", icon: ClipboardCheck, visible: is("owner", "admin", "project_manager") },
+      { to: "/calendars", labelKey: "nav.calendars", icon: CalendarDays, visible: (r) => r !== "client_viewer" },
+    ],
   },
   {
     labelKey: "nav.sectionCompany",

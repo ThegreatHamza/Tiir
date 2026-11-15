@@ -1,10 +1,26 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
 import path from "node:path";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Installable PWA: the app shell is cached so site screens open offline.
+    VitePWA({
+      registerType: "autoUpdate",
+      manifest: false, // public/manifest.webmanifest
+      includeAssets: ["favicon.ico", "favicon.png", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png", "maskable-512x512.png"],
+      workbox: {
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/auth\//, /^\/rest\//, /^\/storage\//],
+        globPatterns: ["**/*.{js,css,html,png,ico,webmanifest,svg}"],
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        cleanupOutdatedCaches: true,
+      },
+    }),
+  ],
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
   },

@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Download, FileSpreadsheet, FileText, ListOrdered, Loader2, Lock, Plus, Settings2, Star } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, ListOrdered, Loader2, Lock, Plus, Settings2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
@@ -116,17 +116,7 @@ export function EstimatePage() {
   const editable = can.editEstimate(role) && !p.deleted_at;
   const scope = { companyId, projectId, versionId: versionId ?? "" };
 
-  const header = (
-    <div>
-      <Link
-        to={`/projects/${projectId}`}
-        className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden /> {p.code} — {p.name}
-      </Link>
-      <h1 className="text-xl font-semibold">{t("estimating.title")}</h1>
-    </div>
-  );
+  const header = <h2 className="text-lg font-semibold">{t("estimating.title")}</h2>;
 
   if (!version) {
     return (

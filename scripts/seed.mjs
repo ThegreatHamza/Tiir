@@ -410,8 +410,349 @@ async function main() {
       .then(must("takeoff"));
   }
 
+  // -------------------------------------------------------------------------
+  // Phases 2–9 — schedule, site diary, costs, billing, procurement, stock,
+  // labour, equipment, documents and quality (school project, once).
+  // -------------------------------------------------------------------------
+  const already = await db
+    .from("tasks")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", projectId)
+    .then((r) => r.count ?? 0);
+  if (!already) await seedOperations({ companyId, projectId, ids });
+
   console.log("\n✓ Demo data ready. Sign in with any of these (password: %s):", PASSWORD);
   for (const u of USERS) console.log(`  ${u.role.padEnd(16)} ${u.email}`);
+}
+
+const iso = (d) => d.toISOString().slice(0, 10);
+const daysAgo = (n) => iso(new Date(Date.now() - n * 86_400_000));
+
+async function seedOperations({ companyId, projectId, ids }) {
+  const by = { company_id: companyId, created_by: ids.owner };
+  const pj = { ...by, project_id: projectId };
+  const insert = (table, rows) => db.from(table).insert(rows).select().then(must(table));
+
+  const items = await db
+    .from("boq_items")
+    .select("id, code, description, quantity, unit, boq_versions!inner(is_current)")
+    .eq("project_id", projectId)
+    .eq("boq_versions.is_current", true)
+    .is("deleted_at", null)
+    .order("position")
+    .then(must("current items"));
+
+  console.log("→ planning");
+  const t = await insert("tasks", [
+    { ...pj, name: "Installation de chantier", start_date: daysAgo(40), end_date: daysAgo(36), duration: 5, position: 1 },
+    { ...pj, name: "Fondations", start_date: daysAgo(35), end_date: daysAgo(20), duration: 14, position: 2 },
+    { ...pj, name: "Élévation des murs", start_date: daysAgo(19), end_date: daysAgo(-10), duration: 25, position: 3 },
+    { ...pj, name: "Réception provisoire", start_date: daysAgo(-30), end_date: daysAgo(-30), duration: 0, position: 4 },
+  ]);
+  await insert("task_dependencies", [
+    { ...pj, predecessor_id: t[0].id, successor_id: t[1].id, type: "FS" },
+    { ...pj, predecessor_id: t[1].id, successor_id: t[2].id, type: "FS" },
+    { ...pj, predecessor_id: t[2].id, successor_id: t[3].id, type: "FS", lag_days: 15 },
+  ]);
+  if (items[0]) await insert("task_boq_links", [{ ...pj, task_id: t[1].id, boq_item_id: items[0].id }]);
+  if (items[1]) await insert("task_boq_links", [{ ...pj, task_id: t[2].id, boq_item_id: items[1].id }]);
+
+  console.log("→ site diary");
+  const weather = ["sunny", "heat", "windy", "sunny", "sandstorm"];
+  for (let d = 5; d >= 1; d--) {
+    const [r] = await insert("daily_reports", [
+      {
+        ...pj,
+        created_by: ids.foreman,
+        report_date: daysAgo(d),
+        weather: weather[d - 1],
+        temperature_c: 34 + d,
+        status: "submitted",
+        summary: "Travaux de gros œuvre selon planning.",
+      },
+    ]);
+    await insert("daily_report_labour", [
+      { ...pj, created_by: ids.foreman, daily_report_id: r.id, trade: "mason", headcount: 6, hours: 8 },
+      { ...pj, created_by: ids.foreman, daily_report_id: r.id, trade: "labourer", headcount: 10, hours: 8 },
+    ]);
+    for (const it of items.slice(0, 2)) {
+      await insert("progress_entries", [
+        {
+          ...pj,
+          created_by: ids.foreman,
+          daily_report_id: r.id,
+          boq_item_id: it.id,
+          entry_date: daysAgo(d),
+          quantity: Math.max(0.5, Math.round((Number(it.quantity) / 12) * 10) / 10),
+        },
+      ]);
+    }
+  }
+  await insert("site_issues", [
+    {
+      ...pj,
+      created_by: ids.foreman,
+      title: "Fissure sur longrine axe B",
+      priority: "high",
+      status: "open",
+      due_date: daysAgo(2),
+      location: "Bloc A",
+    },
+    {
+      ...pj,
+      created_by: ids.foreman,
+      title: "Clôture provisoire à reprendre",
+      priority: "low",
+      status: "in_progress",
+      due_date: daysAgo(-5),
+    },
+  ]);
+
+  console.log("→ suppliers, procurement and stock");
+  const sup = await insert("suppliers", [
+    { ...by, name: "Comptoir du Ciment de Djibouti", kind: "supplier", phone: "+253 21 35 00 00" },
+    { ...by, name: "Ferraillage Ali Sabieh", kind: "supplier" },
+    { ...by, name: "Étanchéité Corne SARL", kind: "subcontractor" },
+  ]);
+  const [loc] = await insert("stock_locations", [{ ...pj, name: "Magasin principal" }]);
+  const [pr] = await insert("purchase_requests", [
+    { ...pj, created_by: ids.foreman, title: "Ciment et acier semaine prochaine", needed_by: daysAgo(-3), status: "approved" },
+  ]);
+  await insert("purchase_request_lines", [
+    { ...pj, purchase_request_id: pr.id, description: "Ciment CPJ 42.5", unit: "t", quantity: 12 },
+    { ...pj, purchase_request_id: pr.id, description: "Acier HA 12", unit: "kg", quantity: 1500 },
+  ]);
+  const [po] = await insert("purchase_orders", [
+    { ...pj, supplier_id: sup[0].id, purchase_request_id: pr.id, order_date: daysAgo(8), expected_date: daysAgo(3), status: "sent" },
+  ]);
+  const pol = await insert("purchase_order_lines", [
+    {
+      ...pj,
+      purchase_order_id: po.id,
+      description: "Ciment CPJ 42.5",
+      unit: "t",
+      quantity: 12,
+      unit_price: 26000,
+      boq_item_id: items[0]?.id ?? null,
+    },
+    {
+      ...pj,
+      purchase_order_id: po.id,
+      description: "Acier HA 12",
+      unit: "kg",
+      quantity: 1500,
+      unit_price: 230,
+      boq_item_id: items[0]?.id ?? null,
+    },
+  ]);
+  await db.from("purchase_requests").update({ status: "ordered" }).eq("id", pr.id).then(must("pr ordered"));
+  const [dl] = await insert("deliveries", [
+    {
+      ...pj,
+      created_by: ids.store,
+      purchase_order_id: po.id,
+      location_id: loc.id,
+      delivery_date: daysAgo(4),
+      delivery_note: "BL 2026-118",
+    },
+  ]);
+  await insert("delivery_lines", [
+    {
+      ...pj,
+      created_by: ids.store,
+      delivery_id: dl.id,
+      purchase_order_line_id: pol[0].id,
+      description: pol[0].description,
+      unit: "t",
+      quantity_received: 8,
+    },
+    {
+      ...pj,
+      created_by: ids.store,
+      delivery_id: dl.id,
+      purchase_order_line_id: pol[1].id,
+      description: pol[1].description,
+      unit: "kg",
+      quantity_received: 1500,
+    },
+  ]);
+  await insert("stock_movements", [
+    {
+      ...pj,
+      created_by: ids.store,
+      location_id: loc.id,
+      kind: "out",
+      movement_date: daysAgo(2),
+      item_name: "Ciment CPJ 42.5",
+      unit: "t",
+      quantity: 5.5,
+      boq_item_id: items[0]?.id ?? null,
+    },
+  ]);
+  await insert("stock_thresholds", [{ ...pj, location_id: loc.id, item_name: "Ciment CPJ 42.5", unit: "t", min_quantity: 3 }]);
+
+  console.log("→ costs and subcontracts");
+  await insert("expenses", [
+    {
+      ...pj,
+      expense_date: daysAgo(30),
+      category: "site_overheads",
+      description: "Location bungalow de chantier",
+      amount: 180000,
+      supplier_id: null,
+    },
+    { ...pj, expense_date: daysAgo(12), category: "transport", description: "Transport agrégats", amount: 95000 },
+    { ...pj, expense_date: daysAgo(6), category: "fees", description: "Essais laboratoire béton", amount: 60000 },
+  ]);
+  const [sc] = await insert("subcontracts", [
+    { ...pj, supplier_id: sup[2].id, title: "Étanchéité toiture", amount: 1950000, retention_rate: 5, status: "active" },
+  ]);
+  await insert("subcontractor_claims", [{ ...pj, subcontract_id: sc.id, claim_date: daysAgo(3), amount: 400000, status: "approved" }]);
+
+  console.log("→ labour and payroll");
+  const workers = await insert("workers", [
+    { ...by, full_name: "Abdi Moussa", trade: "mason", daily_rate: 4000 },
+    { ...by, full_name: "Hassan Ibrahim", trade: "mason", daily_rate: 4000 },
+    { ...by, full_name: "Idriss Farah", trade: "ironworker", daily_rate: 4500 },
+    { ...by, full_name: "Mohamed Daher", trade: "labourer", daily_rate: 2500 },
+    { ...by, full_name: "Saïd Omar", trade: "labourer", daily_rate: 2500 },
+    { ...by, full_name: "Kadar Robleh", trade: "operator", daily_rate: 6000 },
+  ]);
+  const att = [];
+  for (let d = 10; d >= 1; d--)
+    for (const w of workers)
+      att.push({
+        ...pj,
+        created_by: ids.foreman,
+        worker_id: w.id,
+        work_date: daysAgo(d),
+        days: d === 3 && w.trade === "labourer" ? 0.5 : 1,
+        overtime_hours: d === 2 ? 2 : 0,
+      });
+  await insert("attendance", att);
+  await insert("advances", [{ ...by, worker_id: workers[0].id, advance_date: daysAgo(5), amount: 10000 }]);
+  const month = daysAgo(0).slice(0, 7);
+  const [period] = await insert("payroll_periods", [
+    { ...by, name: month, start_date: daysAgo(30), end_date: daysAgo(0), currency: "DJF" },
+  ]);
+  await insert(
+    "payroll_lines",
+    workers.map((w) => ({ ...by, payroll_period_id: period.id, worker_id: w.id, daily_rate: w.daily_rate })),
+  );
+
+  console.log("→ equipment");
+  const eq = await insert("equipment", [
+    { ...by, code: "PEL-01", name: "Pelle hydraulique 20 t", category: "Terrassement", hourly_rate: 18000, ownership: "rented" },
+    { ...by, code: "BET-01", name: "Bétonnière 350 L", category: "Béton", hourly_rate: 1200 },
+  ]);
+  await insert("equipment_logs", [
+    {
+      ...pj,
+      created_by: ids.foreman,
+      equipment_id: eq[0].id,
+      log_date: daysAgo(30),
+      hours: 7,
+      fuel_litres: 90,
+      operator_name: "Kadar Robleh",
+    },
+    { ...pj, created_by: ids.foreman, equipment_id: eq[1].id, log_date: daysAgo(3), hours: 6, fuel_litres: 8 },
+  ]);
+  await insert("maintenance_records", [{ ...by, equipment_id: eq[1].id, title: "Vidange moteur", due_date: daysAgo(-5) }]);
+
+  console.log("→ progress claim");
+  const settings = await db.from("project_settings").select("*").eq("project_id", projectId).single().then(must("settings"));
+  const values = await db
+    .from("boq_item_values")
+    .select("id, effective_unit_price")
+    .in(
+      "id",
+      items.map((i) => i.id),
+    )
+    .then(must("prices")); // invoker view: service role bypasses RLS
+  const [claim] = await insert("progress_claims", [
+    {
+      ...pj,
+      number: 1,
+      period_start: daysAgo(40),
+      period_end: daysAgo(1),
+      retention_rate: settings.retention_rate,
+      advance_recovery_rate: settings.advance_recovery_rate,
+      vat_rate: settings.vat_rate,
+    },
+  ]);
+  // Views filter on the signed-in user; the service role has none, so sum the entries here.
+  const entries = await db
+    .from("progress_entries")
+    .select("boq_item_id, quantity")
+    .eq("project_id", projectId)
+    .is("deleted_at", null)
+    .then(must("progress"));
+  const doneBy = new Map();
+  for (const e of entries) doneBy.set(e.boq_item_id, (doneBy.get(e.boq_item_id) ?? 0) + Number(e.quantity));
+  await insert(
+    "progress_claim_lines",
+    values.map((v) => ({
+      ...pj,
+      claim_id: claim.id,
+      boq_item_id: v.id,
+      cumulative_quantity: doneBy.get(v.id) ?? 0,
+      previous_quantity: 0,
+      unit_price: v.effective_unit_price ?? 0,
+    })),
+  );
+  await db.from("progress_claims").update({ status: "submitted" }).eq("id", claim.id).then(must("claim submitted"));
+
+  console.log("→ documents and quality");
+  await insert("rfis", [
+    {
+      ...pj,
+      created_by: ids.pm,
+      subject: "Enrobage des fondations",
+      question: "Confirmer l'enrobage de 5 cm en milieu agressif ?",
+      addressed_to: "Bureau de contrôle",
+      due_date: daysAgo(-4),
+    },
+  ]);
+  await insert("drawing_revisions", [
+    { ...pj, drawing_number: "GO-101", title: "Plan de fondations", discipline: "Structure", revision: "A", issued_date: daysAgo(45) },
+    { ...pj, drawing_number: "GO-101", title: "Plan de fondations", discipline: "Structure", revision: "B", issued_date: daysAgo(20) },
+  ]);
+  const [tpl] = await insert("checklist_templates", [
+    {
+      ...by,
+      name: "Avant coulage béton",
+      category: "Gros œuvre",
+      items: [
+        "Coffrage propre et huilé",
+        "Armatures conformes au plan",
+        "Enrobage respecté (cales)",
+        "Réservations en place",
+        "Accord du bureau de contrôle",
+      ].map((label) => ({ label })),
+    },
+  ]);
+  await insert("inspections", [
+    {
+      ...pj,
+      template_id: tpl.id,
+      title: "Semelles bloc A",
+      inspection_date: daysAgo(25),
+      status: "passed",
+      results: tpl.items.map((i) => ({ label: i.label, result: "pass", note: "" })),
+    },
+  ]);
+  await insert("safety_observations", [
+    {
+      ...pj,
+      created_by: ids.foreman,
+      observed_on: daysAgo(2),
+      kind: "unsafe_condition",
+      severity: "medium",
+      description: "Trémie non protégée au R+1",
+      action: "Pose de garde-corps",
+      status: "open",
+    },
+  ]);
 }
 
 main().catch((e) => {

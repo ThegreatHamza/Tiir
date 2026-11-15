@@ -42,6 +42,10 @@ type Props = {
   onOpenItem: (id: string) => void;
 };
 
+/** Above this many items, sections start folded and long sections render in pages. */
+export const LARGE_BOQ = 400;
+const PAGE = 200;
+
 export function BoqEditor({ scope, currency, readOnly, sections, items, onOpenItem }: Props) {
   const { t } = useTranslation();
   const cache = useEstimateCache(scope.versionId);
@@ -66,6 +70,20 @@ export function BoqEditor({ scope, currency, readOnly, sections, items, onOpenIt
     for (const list of map.values()) list.sort((a, b) => a.position - b.position || a.created_at.localeCompare(b.created_at));
     return map;
   }, [sections, items, term]);
+
+  const allBySection = React.useMemo(() => {
+    const map = new Map<string, BoqItemValue[]>();
+    for (const it of items) map.set(it.section_id, [...(map.get(it.section_id) ?? []), it]);
+    return map;
+  }, [items]);
+
+  // Large bills of quantities (thousands of items) open with sections folded.
+  const autoCollapsed = React.useRef(false);
+  React.useEffect(() => {
+    if (autoCollapsed.current || !sections.length) return;
+    autoCollapsed.current = true;
+    if (items.length > LARGE_BOQ) setCollapsed(new Set(sections.map((s) => s.id)));
+  }, [sections, items.length]);
 
   const dragEnabled = !readOnly && !term;
 
@@ -137,7 +155,7 @@ export function BoqEditor({ scope, currency, readOnly, sections, items, onOpenIt
                 key={s.id}
                 section={s}
                 items={bySection.get(s.id) ?? []}
-                allSectionItems={items.filter((i) => i.section_id === s.id)}
+                allSectionItems={allBySection.get(s.id) ?? []}
                 scope={scope}
                 currency={currency}
                 readOnly={readOnly}
@@ -230,6 +248,8 @@ function SectionBlock({
     allSectionItems.map((i) => i.total_price),
     currency,
   );
+  const [limit, setLimit] = React.useState(PAGE);
+  const visible = items.length > limit ? items.slice(0, limit) : items;
 
   async function saveSection(patch: { code?: string; title?: string }) {
     try {
@@ -326,9 +346,9 @@ function SectionBlock({
               </tr>
             </thead>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => void onItemDragEnd(e)}>
-              <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={visible.map((i) => i.id)} strategy={verticalListSortingStrategy}>
                 <tbody>
-                  {items.map((it) => (
+                  {visible.map((it) => (
                     <ItemRow
                       key={it.id}
                       item={it}
@@ -343,6 +363,13 @@ function SectionBlock({
               </SortableContext>
             </DndContext>
           </table>
+          {items.length > visible.length ? (
+            <div className="p-2 text-center">
+              <Button variant="outline" size="sm" onClick={() => setLimit((l) => l + PAGE * 5)}>
+                {t("estimating.boq.showMore", { count: items.length - visible.length })}
+              </Button>
+            </div>
+          ) : null}
           {!readOnly ? <QuickAddRow scope={scope} sectionId={section.id} nextPosition={allSectionItems.length + 1} /> : null}
         </div>
       )}

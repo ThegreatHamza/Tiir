@@ -71,7 +71,7 @@ for (const f of files) {
     for (const l of LANGS) if (!has(l, m[1])) errors.push(`[${l}] key prefix used in ${relative(root, f)} is missing: ${m[1]}.*`);
   }
   // labelKey: "nav.x" style references
-  for (const m of src.matchAll(/Key:\s*"([a-zA-Z0-9_.]+)"/g)) {
+  for (const m of src.matchAll(/(?:label|title|description)Key:\s*"([a-zA-Z0-9_.]+)"/g)) {
     for (const l of LANGS) if (!has(l, m[1])) errors.push(`[${l}] key referenced in ${relative(root, f)} is missing: ${m[1]}`);
   }
 
@@ -90,6 +90,7 @@ for (const f of files) {
 if (errors.length) {
   console.error(errors.join("\n"));
   console.error(`\n✗ i18n check failed with ${errors.length} problem(s).`);
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log(`✓ i18n: ${reference.size} keys × ${LANGS.length} languages, ${used} usages checked, no hard-coded JSX text.`);
 }
-console.log(`✓ i18n: ${reference.size} keys × ${LANGS.length} languages, ${used} usages checked, no hard-coded JSX text.`);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pdfText } from "./pdf";
+import { pdfText } from "./common";
 
 describe("pdfText", () => {
   it("keeps only characters the standard PDF fonts can draw", () => {

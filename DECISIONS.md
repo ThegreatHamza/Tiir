@@ -94,3 +94,62 @@ The rule applied each time: pick the simplest option and write it down.
 - **PDFs use the standard PDF fonts** (no font download, so they work offline). These fonts cannot shape Arabic, so **an Arabic-speaking user gets PDF documents in French**, the business language of contracts in Djibouti. Excel exports are produced in Arabic. Superscripts are written "m2" and "m3" in PDFs for the same font reason.
 - Every PDF carries the company header (name, legal name, address, phone, tax ID and the company logo if uploaded), the Tiir logo, the version, client, currency and date, and page numbers.
 - The estimating pages, react-pdf and SheetJS load only when they are used, so site phones never download them.
+
+## Phases 2–10 — operations, money, portal and hardening
+
+### Shared building blocks
+- **One generic register screen** (`components/crud/CrudPage`) drives most simple lists (issues, expenses, suppliers, workers, equipment, documents, RFIs, inspections…): search, filters, sort, pagination, Excel export, create/edit dialog, soft delete and restore. It is configured with typed table and column names, so a renamed column fails the type check.
+- **`setup_table()`** in SQL gives each new table the standard triggers (updated_at, created_by, company from project, audit), RLS policies by role, and no hard delete. Cross-table references are checked to stay inside the same project or company (`add_same_project_check`).
+- **Server-side numbering** (requests, orders, RFIs, subcontractor claims) under an advisory lock, so two phones never take the same number.
+- **Project screens** share a header and a module menu that only shows the modules the role may open; the router applies the same role list.
+
+### Planning (Phase 2)
+- The critical path is computed in TypeScript (`lib/calc/schedule.ts`, unit tested) on **working-day calendars**: Djibouti defaults to Saturday–Thursday, Ethiopia to Monday–Saturday, plus holidays. Each company gets a default calendar; a project can pick another.
+- Dependencies support FS, SS, FF and SF with lag. Loops are refused by a database trigger as well as in the app.
+- Task progress is either typed in or **computed from the linked BoQ items** (value-weighted done quantities).
+- Baselines are snapshots; the delay report compares current and baseline finish dates in working days.
+
+### Site, offline (Phase 3)
+- The app is a PWA (`vite-plugin-pwa`, auto-update). The TanStack Query cache is kept in IndexedDB, so screens already opened work without network.
+- Site writes (daily reports and their lines, progress, photos, issues, attendance, deliveries, stock movements, machine hours) go through an **offline queue** (Dexie). Rows carry a client-generated uuid, so a retry never duplicates.
+- **Conflicts: last write wins**, by the time the edit was made on the phone (`client_updated_at`), enforced by a database trigger. The user is told when their edit was replaced by a newer one.
+- Photos are compressed on the phone (longest side 1 600 px, JPEG 0.72) before they are stored locally and uploaded.
+- One daily report per project and day (unique index). Progress is entered per BoQ item and follows the item across BoQ versions (`origin_id`).
+
+### Costs and billing (Phase 4)
+- **Actual cost** gathers expenses, approved subcontractor claims, deliveries at the order price, attendance at the worker's daily rate (overtime included) and machine hours at the hourly rate plus fuel at the company fuel price. No cost is stored twice.
+- **Earned value**: BAC = dry cost of the current BoQ; EV = budget × % done per item; PV = BAC × duration-weighted planned % of the schedule today. CPI, SPI, EAC (= BAC ÷ CPI) and variances follow (`lib/calc/costs.ts`).
+- **Progress claims** (situations de travaux) are built from site progress up to the claim date; quantities can be adjusted while the claim is a draft. Retention, advance recovery and VAT come from the project settings and are copied onto the claim. Retention stops at the cap (a % of the contract value); recovery stops when the advance is repaid; rejected claims do not count. The SQL function and `lib/calc/billing.ts` implement the same rules and are tested with the same figures.
+- A claim moves draft → submitted → approved/rejected → paid; a submitted claim is locked. The **client approves or rejects** in the portal (or an owner/admin on the client's behalf, e.g. after a paper signature); the contractor is notified.
+- Projects in different currencies are never added together: company totals are shown per currency.
+
+### Procurement and stock (Phase 5)
+- Request → approval (owners, admins, project managers) → order (prices filled in by cost roles) → receipt. A database trigger turns each received delivery line into a stock entry.
+- **Storekeepers and foremen never see prices**: they read orders through `purchase_order_lines_site` (quantities, received, remaining, over-delivery flag).
+- Stock is per store and item name (the same name must be used for an item); minimum levels raise a low-stock flag.
+
+### Labour and payroll (Phase 6)
+- Attendance is ½-day precision (0, ½, 1) plus overtime hours, entered per project and day on the phone.
+- Pay = days × daily rate + overtime hours × (daily rate ÷ hours per day) × overtime multiplier + bonus − advances − other deductions. The rate is copied onto the payslip line when the period is generated. Approving a period **locks** its attendance, advances and payslips.
+- Only owners, admins and accountants see payroll. Project managers see worker rates (to manage costs); foremen see names and trades only.
+
+### Equipment (Phase 7)
+- One company fleet shared by projects. Hours and fuel are logged per project and day. Maintenance is due by date (with the company alert window) or by meter hours.
+
+### Documents and quality (Phase 8)
+- Documents are versioned by a document key; the list shows the latest version, older versions stay downloadable. Drawings keep every revision and flag the current one.
+- Images attached as documents or drawings are **not compressed** (scans must stay legible); photos are.
+- Checklists are company templates (one point per line). An inspection is "passed" when every applicable point passes and "failed" as soon as one fails.
+- **Clients only reach shared files**: the storage policy for a client viewer checks that the file belongs to a shared document or photo, not just to their project.
+
+### Dashboards and client portal (Phase 9)
+- Company dashboard: alerts (claims waiting, overdue issues, low stock, maintenance due), totals per currency and one line per project with CPI.
+- Project report: key figures, claims, open issues and the last 30 days on site, with a monthly PDF.
+- Client portal: physical progress (value-weighted, no amounts), shared photos and documents, and claims to approve with their PDF. Clients read claim lines through a view that adds the item wording without exposing the BoQ.
+
+### Hardening (Phase 10)
+- `supabase/tests/platform_test.sql` checks every table: RLS on, created/updated/created_by/deleted_at present, company and project ids indexed, uuid primary keys, no hard delete, nothing readable anonymously, money in numeric(18,2) and quantities in numeric(18,3) (analysis consumptions keep 4 decimals on purpose), money views run with the caller's rights, and definer functions pin their search path.
+- `supabase/tests/modules_test.sql` ends by checking **every table**: a user of company B reads none of company A's rows and updates none.
+- **Performance**: the RLS helpers were rewritten as single flat queries (a nested definer call costs a search-path switch per row). On a 5 000-item BoQ, totals went from more than two minutes to about 0.2 s; the test fails above 1.5 s. The BoQ editor folds all sections when a BoQ has more than 400 items and renders long sections 200 rows at a time.
+- Arabic users get PDFs in French (standard PDF fonts cannot shape Arabic), as in Phase 1.
+- The demo seed creates operations data for the school project (schedule, five daily reports, procurement, stock, attendance, payroll, equipment, a submitted claim, RFI, drawings, checklist and inspection).

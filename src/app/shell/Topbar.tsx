@@ -20,6 +20,7 @@ import { Logo } from "@/components/common/Logo";
 import { useAuth, useUser } from "@/features/auth/AuthProvider";
 import { useCompanyContext } from "@/features/companies/CompanyProvider";
 import { NotificationsMenu } from "@/features/notifications/NotificationsMenu";
+import { SyncIndicator } from "@/components/common/SyncIndicator";
 import { supabase } from "@/lib/supabase";
 import { qk } from "@/lib/queryKeys";
 import { errorMessage } from "@/lib/errors";
@@ -91,6 +92,7 @@ export function Topbar({ menuButton }: { menuButton: React.ReactNode }) {
       <Logo variant="mark" className="me-1 lg:hidden" />
       <CompanySwitcher />
       <div className="ms-auto flex items-center gap-0.5">
+        <SyncIndicator />
         <LanguageSwitcher compact onChange={(language) => void savePreference({ language })} />
         <Button
           variant="ghost"

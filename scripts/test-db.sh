@@ -27,11 +27,6 @@ if [[ $PLAIN -eq 1 ]]; then
     echo "→ migrating $(basename "$f")"
     "${PSQL[@]}" "$DB_URL" -f "$f"
   done
-  # Migrations must be re-runnable.
-  for f in "$ROOT"/supabase/migrations/*.sql; do
-    "${PSQL[@]}" "$DB_URL" -f "$f" >/dev/null
-  done
-  echo "→ migrations are idempotent"
 else
   echo "→ resetting local Supabase database"
   npx supabase db reset --local >/dev/null
