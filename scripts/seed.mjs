@@ -431,7 +431,9 @@ const daysAgo = (n) => iso(new Date(Date.now() - n * 86_400_000));
 async function seedOperations({ companyId, projectId, ids }) {
   const by = { company_id: companyId, created_by: ids.owner };
   const pj = { ...by, project_id: projectId };
-  const insert = (table, rows) => db.from(table).insert(rows).select().then(must(table));
+  // defaultToNull: false — rows with different keys get column defaults, not NULL.
+  const insert = (table, rows) =>
+    db.from(table).insert(rows, { defaultToNull: false }).select().then(must(table));
 
   const items = await db
     .from("boq_items")
