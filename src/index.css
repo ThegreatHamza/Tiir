@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+  body {
+    @apply bg-background text-foreground text-sm;
+    font-feature-settings: "tnum" 1;
+  }
+  /* Arabic: slightly larger type for legibility */
+  html[lang="ar"] body {
+    @apply text-[15px];
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Numbers and codes stay left-to-right inside RTL text. */
+  .ltr-nums {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+}

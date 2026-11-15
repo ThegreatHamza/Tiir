@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*
+!.env.example
+coverage
+.DS_Store
+*.log
+supabase/.branches
+supabase/.temp
+.vscode/*
+!.vscode/extensions.json
