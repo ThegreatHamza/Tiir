@@ -13,4 +13,9 @@ alter default privileges in schema public revoke execute on functions from publi
 alter default privileges in schema public grant execute on functions to authenticated, service_role;
 
 -- Sign-up and email-change triggers run as the auth service.
-grant execute on function public.handle_new_user(), public.handle_user_email_change() to supabase_auth_admin;
+do $$
+begin
+  if exists (select 1 from pg_roles where rolname = 'supabase_auth_admin') then
+    grant execute on function public.handle_new_user(), public.handle_user_email_change() to supabase_auth_admin;
+  end if;
+end $$;
