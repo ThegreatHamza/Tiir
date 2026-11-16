@@ -79,8 +79,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created after insert on auth.users
+create or replace trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
 
 -- Keep profiles.email in sync after an email change is confirmed.
@@ -97,8 +96,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists on_auth_user_email_changed on auth.users;
-create trigger on_auth_user_email_changed after update of email on auth.users
+create or replace trigger on_auth_user_email_changed after update of email on auth.users
   for each row execute function public.handle_user_email_change();
 
 -- ---------------------------------------------------------------------------

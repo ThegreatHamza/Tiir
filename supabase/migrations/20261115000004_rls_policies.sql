@@ -127,8 +127,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists company_members_guard on public.company_members;
-create trigger company_members_guard before insert or update on public.company_members
+create or replace trigger company_members_guard before insert or update on public.company_members
   for each row execute function public.tg_company_members_guard();
 
 -- ---------------------------------------------------------------------------
@@ -225,8 +224,7 @@ begin
   return null;
 end;
 $$;
-drop trigger if exists projects_after_insert on public.projects;
-create trigger projects_after_insert after insert on public.projects
+create or replace trigger projects_after_insert after insert on public.projects
   for each row execute function public.tg_projects_after_insert();
 
 -- ---------------------------------------------------------------------------

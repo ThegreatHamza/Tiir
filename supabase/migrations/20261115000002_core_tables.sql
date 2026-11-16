@@ -154,8 +154,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists projects_lock_currency on public.projects;
-create trigger projects_lock_currency before update on public.projects
+create or replace trigger projects_lock_currency before update on public.projects
   for each row execute function public.tg_projects_lock_currency();
 
 -- ---------------------------------------------------------------------------
@@ -196,8 +195,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists project_members_company on public.project_members;
-create trigger project_members_company before insert or update on public.project_members
+create or replace trigger project_members_company before insert or update on public.project_members
   for each row execute function public.tg_project_child_company();
 
 -- ---------------------------------------------------------------------------
@@ -242,8 +240,7 @@ create table if not exists public.project_settings (
 select public.attach_standard_triggers('public.project_settings');
 create index if not exists project_settings_company_idx on public.project_settings (company_id);
 create index if not exists project_settings_project_idx on public.project_settings (project_id);
-drop trigger if exists project_settings_company on public.project_settings;
-create trigger project_settings_company before insert or update on public.project_settings
+create or replace trigger project_settings_company before insert or update on public.project_settings
   for each row execute function public.tg_project_child_company();
 
 -- ---------------------------------------------------------------------------
@@ -332,7 +329,6 @@ begin
   foreach t in array array['companies','company_members','company_invitations','clients','projects',
                            'project_members','company_settings','project_settings']
   loop
-    execute format('drop trigger if exists %I on public.%I', t || '_audit', t);
-    execute format('create trigger %I after insert or update or delete on public.%I for each row execute function public.tg_audit()', t || '_audit', t);
+    execute format('create or replace trigger %I after insert or update or delete on public.%I for each row execute function public.tg_audit()', t || '_audit', t);
   end loop;
 end $$;

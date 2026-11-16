@@ -136,8 +136,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists progress_claim_lines_locked on public.progress_claim_lines;
-create trigger progress_claim_lines_locked before insert or update on public.progress_claim_lines
+create or replace trigger progress_claim_lines_locked before insert or update on public.progress_claim_lines
   for each row execute function public.tg_claim_lines_locked();
 
 create or replace function public.tg_claim_guard()
@@ -163,8 +162,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists progress_claims_guard on public.progress_claims;
-create trigger progress_claims_guard before update on public.progress_claims
+create or replace trigger progress_claims_guard before update on public.progress_claims
   for each row execute function public.tg_claim_guard();
 
 -- Client viewers see submitted and decided claims of their projects.

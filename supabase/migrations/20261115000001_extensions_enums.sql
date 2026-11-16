@@ -86,10 +86,8 @@ declare
   t text := p_table::text;
   n text := replace(replace(p_table::text, 'public.', ''), '"', '');
 begin
-  execute format('drop trigger if exists %I on %s', n || '_updated_at', t);
-  execute format('create trigger %I before update on %s for each row execute function public.tg_set_updated_at()', n || '_updated_at', t);
-  execute format('drop trigger if exists %I on %s', n || '_created_by', t);
-  execute format('create trigger %I before insert or update on %s for each row execute function public.tg_set_created_by()', n || '_created_by', t);
+  execute format('create or replace trigger %I before update on %s for each row execute function public.tg_set_updated_at()', n || '_updated_at', t);
+  execute format('create or replace trigger %I before insert or update on %s for each row execute function public.tg_set_created_by()', n || '_created_by', t);
 end;
 $$;
 

@@ -77,8 +77,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists purchase_requests_approval on public.purchase_requests;
-create trigger purchase_requests_approval before update on public.purchase_requests
+create or replace trigger purchase_requests_approval before update on public.purchase_requests
   for each row execute function public.tg_pr_approval();
 
 -- ---------------------------------------------------------------------------
@@ -287,8 +286,7 @@ begin
   return null;
 end;
 $$;
-drop trigger if exists delivery_lines_stock on public.delivery_lines;
-create trigger delivery_lines_stock after insert or update on public.delivery_lines
+create or replace trigger delivery_lines_stock after insert or update on public.delivery_lines
   for each row execute function public.tg_delivery_line_stock();
 
 -- ---------------------------------------------------------------------------

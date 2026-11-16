@@ -18,14 +18,11 @@ begin
 end;
 $$;
 
-drop trigger if exists purchase_requests_number on public.purchase_requests;
-create trigger purchase_requests_number before insert on public.purchase_requests
+create or replace trigger purchase_requests_number before insert on public.purchase_requests
   for each row execute function public.tg_auto_number('project_id');
-drop trigger if exists purchase_orders_number on public.purchase_orders;
-create trigger purchase_orders_number before insert on public.purchase_orders
+create or replace trigger purchase_orders_number before insert on public.purchase_orders
   for each row execute function public.tg_auto_number('project_id');
-drop trigger if exists subcontractor_claims_number on public.subcontractor_claims;
-create trigger subcontractor_claims_number before insert on public.subcontractor_claims
+create or replace trigger subcontractor_claims_number before insert on public.subcontractor_claims
   for each row execute function public.tg_auto_number('subcontract_id');
 
 -- Turns an approved purchase request into a draft order (prices filled in afterwards).

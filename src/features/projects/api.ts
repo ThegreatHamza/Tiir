@@ -43,9 +43,12 @@ export async function fetchProjectOptions(companyId: string) {
 }
 
 export async function createProject(values: TablesInsert<"projects">) {
-  const { data, error } = await supabase.from("projects").insert(values).select("id").single();
+  // The id is chosen here: a RETURNING read-back would be checked against the
+  // project access rule before the creator's membership row exists.
+  const id = values.id ?? crypto.randomUUID();
+  const { error } = await supabase.from("projects").insert({ ...values, id });
   if (error) throw error;
-  return data.id;
+  return id;
 }
 
 export async function updateProject(id: string, values: TablesUpdate<"projects">) {

@@ -142,8 +142,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['attendance', 'advances', 'payroll_lines'] loop
-    execute format('drop trigger if exists %I on public.%I', t || '_payroll_lock', t);
-    execute format('create trigger %I before insert or update on public.%I for each row execute function public.tg_payroll_lock()', t || '_payroll_lock', t);
+    execute format('create or replace trigger %I before insert or update on public.%I for each row execute function public.tg_payroll_lock()', t || '_payroll_lock', t);
   end loop;
 end $$;
 

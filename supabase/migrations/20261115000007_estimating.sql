@@ -127,8 +127,7 @@ create unique index if not exists boq_versions_number_unique_live
   on public.boq_versions (project_id, number) where deleted_at is null;
 create unique index if not exists boq_versions_one_current
   on public.boq_versions (project_id) where is_current and deleted_at is null;
-drop trigger if exists boq_versions_company on public.boq_versions;
-create trigger boq_versions_company before insert or update on public.boq_versions
+create or replace trigger boq_versions_company before insert or update on public.boq_versions
   for each row execute function public.tg_project_child_company();
 
 -- A version's pricing is frozen once it leaves 'draft'.
@@ -150,8 +149,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists boq_versions_guard on public.boq_versions;
-create trigger boq_versions_guard before update on public.boq_versions
+create or replace trigger boq_versions_guard before update on public.boq_versions
   for each row execute function public.tg_boq_versions_guard();
 
 -- ---------------------------------------------------------------------------
@@ -351,13 +349,11 @@ declare t text;
 begin
   foreach t in array array['boq_sections','unit_price_analyses','unit_price_components','boq_items','takeoff_lines']
   loop
-    execute format('drop trigger if exists %I on public.%I', t || '_boq_child', t);
-    execute format('create trigger %I before insert or update on public.%I for each row execute function public.tg_boq_child()', t || '_boq_child', t);
+    execute format('create or replace trigger %I before insert or update on public.%I for each row execute function public.tg_boq_child()', t || '_boq_child', t);
   end loop;
   foreach t in array array['price_resources','boq_versions','boq_sections','unit_price_analyses','boq_items']
   loop
-    execute format('drop trigger if exists %I on public.%I', t || '_audit', t);
-    execute format('create trigger %I after insert or update or delete on public.%I for each row execute function public.tg_audit()', t || '_audit', t);
+    execute format('create or replace trigger %I after insert or update or delete on public.%I for each row execute function public.tg_audit()', t || '_audit', t);
   end loop;
 end $$;
 
@@ -383,8 +379,7 @@ begin
   return null;
 end;
 $$;
-drop trigger if exists upa_soft_delete on public.unit_price_analyses;
-create trigger upa_soft_delete after update of deleted_at on public.unit_price_analyses
+create or replace trigger upa_soft_delete after update of deleted_at on public.unit_price_analyses
   for each row execute function public.tg_upa_soft_delete();
 
 -- ---------------------------------------------------------------------------
@@ -595,10 +590,8 @@ begin
   if not public.can_edit_estimate(p_project_id) then
     raise exception 'not allowed' using errcode = 'insufficient_privilege';
   end if;
-
   select coalesce(max(number), 0) + 1, count(*) = 0 into v_number, v_first
   from public.boq_versions where project_id = p_project_id and deleted_at is null;
-
   if p_source_id is not null then
     select coefficient into v_coef from public.boq_versions
      where id = p_source_id and project_id = p_project_id and deleted_at is null;
@@ -608,56 +601,45 @@ begin
   else
     select price_coefficient into v_coef from public.project_settings where project_id = p_project_id;
   end if;
-
   insert into public.boq_versions (project_id, number, name, coefficient, is_current, based_on_id)
   values (p_project_id, v_number, coalesce(nullif(trim(p_name), ''), 'V' || v_number), coalesce(v_coef, 1), v_first, p_source_id)
   returning id into v_id;
-
   if p_source_id is null then
     return v_id;
   end if;
 
-  drop table if exists pg_temp.boq_copy_map;
-  create temp table boq_copy_map (old_id uuid primary key, new_id uuid not null) on commit drop;
-
-  insert into boq_copy_map select id, gen_random_uuid() from public.boq_sections
-   where version_id = p_source_id and deleted_at is null;
+  -- Copy ids are derived from (old id, new version), so parents and children
+  -- map to each other without a lookup table.
   insert into public.boq_sections (id, version_id, code, title, position)
-  select m.new_id, v_id, s.code, s.title, s.position
-  from public.boq_sections s join boq_copy_map m on m.old_id = s.id;
+  select md5(s.id::text || v_id::text)::uuid, v_id, s.code, s.title, s.position
+  from public.boq_sections s where s.version_id = p_source_id and s.deleted_at is null;
 
-  insert into boq_copy_map select id, gen_random_uuid() from public.unit_price_analyses
-   where version_id = p_source_id and deleted_at is null;
   insert into public.unit_price_analyses (id, version_id, code, title, unit, coefficient, notes)
-  select m.new_id, v_id, a.code, a.title, a.unit, a.coefficient, a.notes
-  from public.unit_price_analyses a join boq_copy_map m on m.old_id = a.id;
+  select md5(a.id::text || v_id::text)::uuid, v_id, a.code, a.title, a.unit, a.coefficient, a.notes
+  from public.unit_price_analyses a where a.version_id = p_source_id and a.deleted_at is null;
 
-  insert into public.unit_price_components
-    (version_id, upa_id, resource_id, kind, designation, unit, quantity, unit_cost, waste_rate, position)
-  select v_id, m.new_id, c.resource_id, c.kind, c.designation, c.unit, c.quantity, c.unit_cost, c.waste_rate, c.position
-  from public.unit_price_components c join boq_copy_map m on m.old_id = c.upa_id
-  where c.deleted_at is null;
+  insert into public.unit_price_components (version_id, upa_id, resource_id, kind, designation, unit, quantity, unit_cost, waste_rate, position)
+  select v_id, md5(c.upa_id::text || v_id::text)::uuid, c.resource_id, c.kind, c.designation, c.unit, c.quantity, c.unit_cost, c.waste_rate, c.position
+  from public.unit_price_components c
+  join public.unit_price_analyses a on a.id = c.upa_id and a.deleted_at is null
+  where c.version_id = p_source_id and c.deleted_at is null;
 
-  insert into boq_copy_map
-  select i.id, gen_random_uuid() from public.boq_items i
+  insert into public.boq_items (id, version_id, section_id, upa_id, position, code, description, unit, quantity_source, quantity, unit_cost, unit_price, notes)
+  select md5(i.id::text || v_id::text)::uuid, v_id, md5(i.section_id::text || v_id::text)::uuid,
+         case when a.id is not null then md5(a.id::text || v_id::text)::uuid end,
+         i.position, i.code, i.description, i.unit, i.quantity_source, i.quantity, i.unit_cost, i.unit_price, i.notes
+  from public.boq_items i
   join public.boq_sections s on s.id = i.section_id and s.deleted_at is null
+  left join public.unit_price_analyses a on a.id = i.upa_id and a.deleted_at is null
   where i.version_id = p_source_id and i.deleted_at is null;
 
-  insert into public.boq_items
-    (id, version_id, section_id, upa_id, position, code, description, unit, quantity_source, quantity, unit_cost, unit_price, notes)
-  select mi.new_id, v_id, ms.new_id, mu.new_id, i.position, i.code, i.description, i.unit, i.quantity_source, i.quantity,
-         i.unit_cost, i.unit_price, i.notes
-  from public.boq_items i
-  join boq_copy_map mi on mi.old_id = i.id
-  join boq_copy_map ms on ms.old_id = i.section_id
-  left join boq_copy_map mu on mu.old_id = i.upa_id;
-
   insert into public.takeoff_lines (version_id, item_id, position, label, count, length, width, height)
-  select v_id, mi.new_id, l.position, l.label, l.count, l.length, l.width, l.height
-  from public.takeoff_lines l join boq_copy_map mi on mi.old_id = l.item_id
-  where l.deleted_at is null;
+  select v_id, md5(l.item_id::text || v_id::text)::uuid, l.position, l.label, l.count, l.length, l.width, l.height
+  from public.takeoff_lines l
+  join public.boq_items i on i.id = l.item_id and i.deleted_at is null
+  join public.boq_sections s on s.id = i.section_id and s.deleted_at is null
+  where l.version_id = p_source_id and l.deleted_at is null;
 
-  drop table boq_copy_map;
   return v_id;
 end;
 $$;

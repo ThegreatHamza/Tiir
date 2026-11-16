@@ -125,8 +125,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists rfis_number on public.rfis;
-create trigger rfis_number before insert or update on public.rfis
+create or replace trigger rfis_number before insert or update on public.rfis
   for each row execute function public.tg_rfi_number();
 
 create table if not exists public.checklist_templates (

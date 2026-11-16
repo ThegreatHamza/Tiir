@@ -70,8 +70,7 @@ begin
   return null;
 end;
 $$;
-drop trigger if exists companies_default_calendar on public.companies;
-create trigger companies_default_calendar after insert on public.companies
+create or replace trigger companies_default_calendar after insert on public.companies
   for each row execute function public.tg_company_default_calendar();
 
 insert into public.calendars (company_id, name, working_days, is_default, created_by)
@@ -165,8 +164,7 @@ begin
   return new;
 end;
 $$;
-drop trigger if exists task_dependencies_no_cycle on public.task_dependencies;
-create trigger task_dependencies_no_cycle before insert or update on public.task_dependencies
+create or replace trigger task_dependencies_no_cycle before insert or update on public.task_dependencies
   for each row execute function public.tg_task_dependency_no_cycle();
 
 -- Task ↔ BoQ item: site progress on the item drives task progress.
@@ -297,6 +295,5 @@ begin
   return null;
 end;
 $$;
-drop trigger if exists tasks_soft_delete_children on public.tasks;
-create trigger tasks_soft_delete_children after update of deleted_at on public.tasks
+create or replace trigger tasks_soft_delete_children after update of deleted_at on public.tasks
   for each row execute function public.tg_tasks_soft_delete_children();
